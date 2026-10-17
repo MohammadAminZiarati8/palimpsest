@@ -1,0 +1,16 @@
+{
+  "_doc": "Combat config (A4). BAL-2 defenseK + spread, BAL-20 Exposed, crit cap, CMB-43 round cap, CMB-40 effect strengths. Percent values are whole percents.",
+  "defenseK": 100,
+  "spreadPercent": 5,
+  "exposedCritPercent": 25,
+  "critCapPercent": 100,
+  "roundCap": 50,
+  "effects": {
+    "bleedAttackPercent": 30,
+    "attackPercent": 25,
+    "defensePercent": 30,
+    "speed": 15,
+    "accuracy": 20,
+    "wardRounds": 2
+  }
+}

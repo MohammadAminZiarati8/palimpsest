@@ -1,0 +1,44 @@
+{
+  "_doc": "Champion kits, base level (balancing.md 'Demo - hero skills', CMB-27). damage/heal/ward = whole percents. Ward always scales with caster max HP (BAL-4); lasts effects.wardRounds (combat.json).",
+  "kits": [
+    {
+      "champion": "c01",
+      "skills": [
+        { "slot": "S1", "name": "Nib Slash", "reach": "Melee", "area": "Single", "damagePercent": 100 },
+        { "slot": "S2", "name": "Bold Stroke", "reach": "Melee", "area": "Splash", "damagePercent": 90, "cooldown": 3 },
+        { "slot": "S3", "name": "Exclamation Leap!", "reach": "Melee", "area": "Single", "dive": true, "damagePercent": 200, "cooldown": 4,
+          "effects": [ { "type": "DefenseDown", "rounds": 1, "on": "Self" } ] }
+      ]
+    },
+    {
+      "champion": "c02",
+      "skills": [
+        { "slot": "S1", "name": "Fine Line", "reach": "Melee", "area": "Single", "damagePercent": 90, "critChanceBonus": 15 },
+        { "slot": "S2", "name": "Strikethrough", "reach": "Melee", "area": "Single", "damagePercent": 150, "cooldown": 3,
+          "effects": [ { "type": "Bleed", "rounds": 2 } ] },
+        { "slot": "S3", "name": "Fade", "reach": "None", "area": "Self", "cooldown": 4,
+          "special": { "type": "Fade", "rounds": 1 } }
+      ]
+    },
+    {
+      "champion": "c03",
+      "skills": [
+        { "slot": "S1", "name": "Seed Scatter", "reach": "Ranged", "area": "Splash", "damagePercent": 60 },
+        { "slot": "S2", "name": "Bramble Line", "reach": "Ranged", "area": "Row", "damagePercent": 70, "cooldown": 3,
+          "effects": [ { "type": "Bleed", "rounds": 2 } ] },
+        { "slot": "S3", "name": "Rootbind", "reach": "Ranged", "area": "Splash", "damagePercent": 40, "cooldown": 4,
+          "effects": [ { "type": "Stun", "rounds": 1 }, { "type": "SpeedDown", "rounds": 2 } ] }
+      ]
+    },
+    {
+      "champion": "c04",
+      "skills": [
+        { "slot": "S1", "name": "Jade Needle", "reach": "Ranged", "area": "Single", "damagePercent": 80,
+          "effects": [ { "type": "AttackDown", "rounds": 1 } ] },
+        { "slot": "S2", "name": "Herbal Remedy", "reach": "None", "area": "AllAllies", "healPercent": 20, "healOf": "Caster", "cleanse": 1, "cooldown": 3 },
+        { "slot": "S3", "name": "Coiled Guard", "reach": "None", "area": "AllAllies", "wardPercent": 15, "cooldown": 4,
+          "effects": [ { "type": "DefenseUp", "rounds": 2 } ] }
+      ]
+    }
+  ]
+}

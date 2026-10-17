@@ -46,7 +46,7 @@ Ideas only; the boss list is not decided. None are recruitable (ENM-1).
 
 - **ENM-13** Demo uses only the bosses of the demo Volume (GDD-3).
 - **ENM-14** Respect (UNI IP rules): no ethnic depiction of Zahhak or the Sorcerer (villains by deed only), no gore (Zahhak's serpents "feed" = heal), source-text looks only.
-- **ENM-15** Enemy definitions are content data (`content/enemies/`): id, tier, role, skills, intents. Schema → `tech/data.md` once stage content is built.
+- **ENM-15** Enemy definitions are content data (`content/enemies.json`): id, tier, role, skills, AI rules. Schema → `tech/data.md`.
 
 ## After the demo — backlog (not designed, not in demo)
 Candidate roles: Shielded (shield vs front, Warrior rewarded) · Evasive (Accuracy check) · Artillery (charged Row hit) · Debuffer (Seal) · Line-breaker (Pull/Push) · Ambusher (hidden / Bleed-through specialist) · Summoner · Volatile (explodes) · Aerial (only Ranged reaches) · Sentinel (can't be snuck past).

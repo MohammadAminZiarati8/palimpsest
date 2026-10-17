@@ -48,6 +48,9 @@ namespace Game.Shared.Content
         public static readonly Stat[] All =
             { Stat.Hp, Stat.Attack, Stat.Defense, Stat.Speed, Stat.CritChance, Stat.CritDamage, Stat.Accuracy };
 
+        /// <summary>Stats enemies take from a tier (BAL-16); the rest are fixed defaults (BAL-17).</summary>
+        public static readonly Stat[] EnemyTiered = { Stat.Hp, Stat.Attack, Stat.Defense, Stat.Speed };
+
         /// <summary>HP/Atk/Def: scaled by rarity (BAL-6), level growth (BAL-8) and rank (BAL-9).</summary>
         public static bool IsCore(Stat stat) => stat == Stat.Hp || stat == Stat.Attack || stat == Stat.Defense;
     }

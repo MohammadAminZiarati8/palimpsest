@@ -83,3 +83,4 @@
 | 2026-10-17 | D-78 | Splash (CMB-13) second hit = enemy behind the target (far side from attacker), else the other side; never allies; no side pick | User approval |
 | 2026-10-17 | D-79 | Combat defaults (CMB-43): damage rounded half-away-from-zero, min 1, uniform ±5% spread; turn order rebuilt each round start, ties champion → Front-most; joiners act next round; Bleed ticks at start of affected unit's turn, Ward absorbs it; cleanse removes newest debuff; Dive targets any enemy; gaps close toward centre; win = all enemies on field Down (pending arrivals cancelled); 50-round cap = loss (config) | Claude default, user did not object |
 | 2026-10-17 | D-80 | Q-02 removed from roadmap blockers (settled by combat v2, D-10/D-11) | Stale reference |
+| 2026-10-17 | D-81 | Enemy growth (BAL-17) is linear like heroes (BAL-8): Lv1 × (1 + (L−1) × 9%), then Elite ×; growthPercent in `content/enemies.json` | Claude default (Proposed), user to confirm |
