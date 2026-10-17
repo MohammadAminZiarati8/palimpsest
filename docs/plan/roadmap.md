@@ -3,7 +3,7 @@
 
 | M | Goal | Done when | Blocked by | Status |
 |---|---|---|---|---|
-| M0 | Foundations | Repo + stack decided; skeletons for shared/server/client build; `dotnet test` runs | Q-03, Q-04 | Active |
+| M0 | Foundations | Repo + stack decided; skeletons for shared/server/client build; `dotnet test` runs | — (Q-03, Q-04 decided: D-62..65) | Active |
 | M1 | Shared core | Content models + JSON loaders; champion stat calc (rarity, level, rank, class growth) tested | — | Todo |
 | M2 | Combat | Combat spec Decided; deterministic sim in `shared`; playable Unity prototype vs test enemies | Q-02 | Todo |
 | M3 | Backend core + champion progression | Guest auth, player state, inventory/currencies, ledger; level/rank/skills end-to-end Unity↔server | Q-07, Q-08, Q-13 | Todo |
