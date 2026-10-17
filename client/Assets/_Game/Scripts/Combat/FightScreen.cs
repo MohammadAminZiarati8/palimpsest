@@ -6,6 +6,7 @@ using System.Text;
 using Game.Core;
 using Game.Shared.Combat;
 using Game.Shared.Content;
+using PrimeTween;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem.UI;
@@ -14,17 +15,15 @@ using UnityEngine.UI;
 namespace Game.Combat
 {
     /// <summary>
-    /// M2a-T7 placeholder fight screen: builds its own uGUI from code, plays the shared sim.
+    /// M2a-T7/T8 placeholder fight screen: builds its own uGUI from code, plays the shared sim.
+    /// T8: Seedbed 1–6 test-fight picker (<see cref="TestFight"/>), floating damage/heal numbers
+    /// (PrimeTween), win/lose panel.
     /// Row (CMB-11): ours [Back][Middle][Front] vs [Front][Middle][Back] enemies. Heroes: pick a skill,
     /// then a target box (Self/AllAllies skills fire at once); Shift via the arrow buttons (CMB-16).
-    /// Enemies play their intent (CMB-41) after a short delay. Real art/feedback: T8.
+    /// Enemies play their intent (CMB-41) after a short delay. Real art: DEMO-12.
     /// </summary>
     public sealed class FightScreen : MonoBehaviour
     {
-        [SerializeField] private string[] heroes = { "c01", "c02", "c04" };
-        [SerializeField] private string[] enemies = { "C1", "C2", "C4" };
-        [SerializeField] private int heroLevel = 1;
-        [SerializeField] private int enemyLevel = 1;
         [SerializeField] private ulong seed = 1;
         [SerializeField] private float enemyDelay = 0.7f;
 
@@ -41,7 +40,12 @@ namespace Game.Combat
         private readonly List<Button> _skillButtons = new List<Button>();
         private readonly Queue<string> _log = new Queue<string>();
         private Text _header = null!, _logText = null!, _hint = null!;
-        private Button _shiftBack = null!, _shiftFront = null!, _restart = null!;
+        private Button _shiftBack = null!, _shiftFront = null!;
+        private RectTransform _root = null!;
+        private GameObject _picker = null!, _result = null!;
+        private Text _resultText = null!;
+        private TestFight _setup = TestFight.Seedbed[0];
+        private readonly HashSet<FightUnit> _crits = new HashSet<FightUnit>();
         private SkillDef? _picked;
         private bool _busy;
 
@@ -60,7 +64,15 @@ namespace Game.Combat
             _db = ContentLoader.Load(new ResourcesContentSource());
             _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             BuildUi();
-            NewFight();
+            ShowPicker(true);
+        }
+
+        private void ShowPicker(bool show)
+        {
+            StopAllCoroutines();
+            _picker.SetActive(show);
+            _result.SetActive(false);
+            if (!show) NewFight();
         }
 
         // ---------- flow ----------
@@ -70,14 +82,15 @@ namespace Game.Combat
             StopAllCoroutines();
             _fight = new Fight(_db, new FightSetup
             {
-                Heroes = heroes.Select(id => new HeroEntry { ChampionId = id, Level = heroLevel }).ToList(),
-                Enemies = enemies.Select(id => new EnemyEntry { EnemyId = id, Level = enemyLevel }).ToList(),
+                Heroes = _setup.Heroes.Select(id => new HeroEntry
+                    { ChampionId = id, Level = _setup.HeroLevel, Rank = _setup.HeroRank }).ToList(),
+                Enemies = _setup.Enemies.Select(id => new EnemyEntry { EnemyId = id, Level = _setup.EnemyLevel }).ToList(),
                 Seed = seed,
             });
             _log.Clear();
             _picked = null;
             _busy = false;
-            Log($"Fight start (seed {seed})");
+            Log($"{_setup.Name}: heroes Lv{_setup.HeroLevel} R{_setup.HeroRank} vs enemies Lv{_setup.EnemyLevel} (seed {seed})");
             Advance();
         }
 
@@ -96,7 +109,7 @@ namespace Game.Combat
             Refresh();
             yield return new WaitForSeconds(enemyDelay);
             if (unit.Has(StatusEffect.Stun)) Log($"{unit.Name} is stunned");
-            _fight.Step((f, u) =>
+            Play((f, u) =>
             {
                 var plan = f.IntentOf(u);
                 var hits = EnemyAi.Act(f, u);
@@ -111,7 +124,7 @@ namespace Game.Combat
             var skill = _picked!;
             _picked = null;
             var actor = _fight.Next()!;
-            _fight.Step((f, u) => LogAction(u, skill, f.UseSkill(u, skill, target)));
+            Play((f, u) => LogAction(u, skill, f.UseSkill(u, skill, target)));
             Advance();
         }
 
@@ -121,8 +134,42 @@ namespace Game.Combat
             var line = _fight.Line(Side.Heroes);
             var ally = line[actor.Line + direction];
             _picked = null;
-            _fight.Step((f, u) => { f.Shift(u, ally); Log($"{u.Name} shifts with {ally.Name}"); });
+            Play((f, u) => { f.Shift(u, ally); Log($"{u.Name} shifts with {ally.Name}"); });
             Advance();
+        }
+
+        /// <summary>One turn, then a floating number for every HP change (hits, heals, Bleed).</summary>
+        private void Play(ActHook act)
+        {
+            var hp = _fight.Units.ToDictionary(u => u, u => u.Hp);
+            var where = _slots.Where(sl => sl.Unit != null).ToDictionary(sl => sl.Unit!, sl => sl.Box.rectTransform);
+            _crits.Clear();
+            _fight.Step(act);
+            foreach (var u in _fight.Units)
+            {
+                int diff = u.Hp - hp[u];
+                if (diff != 0 && where.TryGetValue(u, out var at)) SpawnNumber(at, diff, _crits.Contains(u));
+            }
+        }
+
+        private void SpawnNumber(RectTransform at, int diff, bool crit)
+        {
+            var t = Label(_root, "Number", crit ? 54 : 40, TextAnchor.MiddleCenter);
+            t.text = diff > 0 ? $"+{diff}" : crit ? $"{-diff}!" : $"{-diff}";
+            var color = diff > 0 ? new Color(0.4f, 1f, 0.5f) : crit ? new Color(1f, 0.85f, 0.2f) : Color.white;
+            t.color = color;
+            var rt = t.rectTransform;
+            rt.sizeDelta = new Vector2(240, 80);
+            rt.position = at.position;
+            var start = rt.anchoredPosition;
+            var go = t.gameObject;
+            Tween.Custom(0f, 1f, 1f, k =>
+                {
+                    rt.anchoredPosition = start + new Vector2(0, 120f * k);
+                    t.color = new Color(color.r, color.g, color.b, 1f - k * k);
+                    rt.localScale = Vector3.one * (k < 0.15f ? 1f + k * 2f : 1.3f - (k - 0.15f) * 0.35f);
+                }, Ease.OutQuad)
+                .OnComplete(() => Destroy(go));
         }
 
         private void OnSkill(int index)
@@ -184,7 +231,11 @@ namespace Game.Combat
                 ? $"{_fight.Outcome}{(_fight.LossReason != LossReason.None ? $" ({_fight.LossReason})" : "")} - round {_fight.Round}"
                 : $"Round {_fight.Round}/{_fight.RoundCap} · {(next != null ? next.Name : "")}'s turn";
             _hint.text = _fight.IsOver ? "" : hero == null ? "Enemy turn..." : _picked == null ? "Pick a skill" : "Pick a green target";
-            _restart.gameObject.SetActive(_fight.IsOver);
+            _result.SetActive(_fight.IsOver);
+            if (_fight.IsOver)
+                _resultText.text = _fight.Outcome == FightOutcome.Won
+                    ? $"Victory!\n<size=28>{_setup.Name}, round {_fight.Round}</size>"
+                    : $"Defeat\n<size=28>{(_fight.LossReason == LossReason.RoundCap ? $"round cap {_fight.RoundCap} reached" : "all heroes Down")}</size>";
             _logText.text = string.Join("\n", _log);
         }
 
@@ -215,6 +266,7 @@ namespace Game.Combat
         private void LogAction(FightUnit u, SkillDef? skill, IReadOnlyList<Hit> hits)
         {
             if (skill == null) { Log($"{u.Name} has no target"); return; }
+            foreach (var h in hits) if (h.Crit) _crits.Add(h.Target);
             var text = hits.Count == 0 ? "" : ": " + string.Join(", ",
                 hits.Select(h => $"{h.Target.Name} -{h.HpLost}{(h.Crit ? " CRIT" : "")}{(h.Target.IsDown ? " DOWN" : "")}"));
             Log($"{u.Name} uses {skill.Name}{text}");
@@ -240,7 +292,7 @@ namespace Game.Combat
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = new Vector2(1920, 1080);
             scaler.matchWidthOrHeight = 0.5f;
-            var root = (RectTransform)canvasGo.transform;
+            var root = _root = (RectTransform)canvasGo.transform;
 
             var bg = Panel(root, "Background", new Color(0.12f, 0.11f, 0.1f));
             Stretch(bg.rectTransform, 0, 0, 1, 1);
@@ -284,12 +336,42 @@ namespace Game.Combat
             _shiftFront.GetComponentInChildren<Text>().text = "Shift front >";
             Place((RectTransform)_shiftFront.transform, 0.07f, 0.11f, 200, 80);
 
-            _restart = MakeButton(root, "Restart", 30, () => { seed++; NewFight(); });
-            _restart.GetComponentInChildren<Text>().text = "New fight (next seed)";
-            Place((RectTransform)_restart.transform, 0.5f, 0.82f, 420, 70);
-
             _logText = Label(root, "Log", 20, TextAnchor.LowerLeft);
             Place(_logText.rectTransform, 0.83f, 0.17f, 620, 280);
+
+            // Win / lose panel (on top of the row).
+            var result = Panel(root, "Result", new Color(0, 0, 0, 0.8f));
+            Place(result.rectTransform, 0.5f, 0.55f, 760, 420);
+            _result = result.gameObject;
+            _resultText = Label(result.rectTransform, "Text", 64, TextAnchor.MiddleCenter);
+            Place(_resultText.rectTransform, 0.5f, 0.7f, 700, 200);
+            AddButton(result.rectTransform, "Retry (same seed)", 0.2f, 0.22f, () => ShowPicker(false));
+            AddButton(result.rectTransform, "Next seed", 0.5f, 0.22f, () => { seed++; ShowPicker(false); });
+            AddButton(result.rectTransform, "Pick fight", 0.8f, 0.22f, () => ShowPicker(true));
+
+            // Test-fight picker (Seedbed 1–6, D-88).
+            var picker = Panel(root, "Picker", new Color(0.08f, 0.08f, 0.07f, 0.97f));
+            Stretch(picker.rectTransform, 0, 0, 1, 1);
+            _picker = picker.gameObject;
+            var title = Label(picker.rectTransform, "Title", 48, TextAnchor.MiddleCenter);
+            title.text = "Test fight";
+            Place(title.rectTransform, 0.5f, 0.85f, 800, 90);
+            for (int i = 0; i < TestFight.Seedbed.Length; i++)
+            {
+                var tf = TestFight.Seedbed[i];
+                var b = AddButton(picker.rectTransform, $"{tf.Name}\nLv{tf.EnemyLevel}: {string.Join(" ", tf.Enemies)}",
+                    0.25f + (i % 3) * 0.25f, i < 3 ? 0.6f : 0.35f, () => { _setup = tf; ShowPicker(false); });
+                ((RectTransform)b.transform).sizeDelta = new Vector2(400, 150);
+            }
+
+        }
+
+        private Button AddButton(RectTransform parent, string text, float ax, float ay, UnityEngine.Events.UnityAction onClick)
+        {
+            var b = MakeButton(parent, text, 26, onClick);
+            b.GetComponentInChildren<Text>().text = text;
+            Place((RectTransform)b.transform, ax, ay, 220, 80);
+            return b;
         }
 
         private static Image Panel(RectTransform parent, string name, Color color)

@@ -1,7 +1,7 @@
 # STATUS
 > Read every session. Keep under ~40 lines. Detailed history = git log.
 
-**Phase:** M2a Combat (single fight) · **Next:** user play-check of T7 (menu Game/Test Fight), then M2a-T8 · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
+**Phase:** M2a Combat (single fight) · **Next:** user play-check of T8 (Game/Test Fight), then M2b planning · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
 
 ## Done (details: git log, `decisions.md`)
 - GDD for demo (universe, combat v2, enemies, story, demo scope, 4 champions, BAL-1..20); stack D-62..66; art D-68..70
@@ -18,12 +18,12 @@ Rules: CMB-12..15, 25..27, 29, 31, 40..43 · BAL-2..4, 15..18, 20. Code in `shar
 - [x] T5 Hero kit specials (Fade, self Def down, heal, Ward) + Shift
 - [x] T6 Enemy AI + intents (CMB-41) + determinism test (same seed + inputs = same result, A3)
 - [x] T7 Unity fight screen, placeholder boxes, plays the sim (Unity MCP: ask cost first)
-- [ ] T8 Unity feedback (damage numbers, PrimeTween), win/lose, Seedbed 1–6 test-fight picker; user play-check
+- [x] T8 Unity feedback (damage numbers, PrimeTween), win/lose, Seedbed 1–6 test-fight picker; user play-check
 - M2b later: Herald, doors/Join/Fall back, room options (Q7 room %/door heal, Q8 Margin Strike/Strike Out still to ask), Noise, Notice, Rewrite, Retreat
 
 ## Last session
-- 2026-10-17: M2a-T2..T7 done. Sim in `shared/Combat` (fight core, BAL-2 damage, targeting, effects/cooldowns, kits, Shift, `EnemyAi` CMB-41, A3 test; 136 tests). D-82..87 Claude defaults; Q-27 behind `aiHealSelf`.
-- T7 (scripts only, no Unity MCP, user OK): `Game.Combat.FightScreen` builds uGUI from code; menu *Game/Test Fight* creates/opens `Scenes/TestFight.unity` and plays. `Fight.Next()` peeks the next actor.
-- Not yet play-checked by the user; batch compile only. Exposed only triggers once M2b adds rear positions.
-- Next: user presses Game/Test Fight and reports issues; then M2a-T8 (feedback, PrimeTween, Seedbed picker).
+- 2026-10-17: M2a T2..T8 done (one session). Sim in `shared/Combat` (136 tests); Unity `Game.Combat.FightScreen` via menu *Game/Test Fight* (user play-checked T7 OK).
+- T8: Seedbed 1–6 test-fight picker (`TestFights.cs`, lineups Proposed D-88), floating damage/heal numbers (PrimeTween), win/lose panel (retry / next seed / pick).
+- Open for user: approve D-88 test lineups; Q-27 Corrector self-heal (now off). D-82..87 Claude defaults. T8 play-checked OK by user.
+- Next: M2b (stage flow) planning from `plan/roadmap.md`.
 - User: one question at a time, plain words, small demo, free maintained packages, state Claude usage cost before heavy tools.
