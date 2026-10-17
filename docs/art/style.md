@@ -7,7 +7,8 @@
 - **ART-3** Matte hand-painted textures, no plastic shine; costumes layered and detailed (stitching, belts, buckles, trims).
 - **ART-4** Each hero keeps one accent colour (e.g. Margo orange-red) and one Palimpsest motif (paper, ink, pen).
 - **ART-5** Hero select / collection: hero on glowing blue ring pedestal, dark blue background.
-- Open: 3D models vs pre-rendered 2D sprites (affects D-64 "2D URP"); pipeline/budget (Q-23).
+- **ART-6** Characters = 2D cut-out sprites (D-69): one hero picture split into layered parts (PSB), animated with bones (Unity 2D Animation). Fixed 3/4 view facing one side; no frame-by-frame sprites.
+- Open: who makes/cuts the art, budget (Q-23).
 
 ## Gemini prompt (attach AC Rebellion screenshots as style reference)
 ```text

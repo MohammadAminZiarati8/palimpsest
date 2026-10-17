@@ -71,3 +71,4 @@
 | 2026-10-17 | D-66 | Architecture A1–A11 approved (`tech/architecture.md`): adds safe retries, ledger, content version check, client layers Core/Screens/Views, stateless server, server modules. Tech docs Decided (M0-7) | User approval |
 | 2026-10-17 | D-67 | Repo: github.com/MohammadAminZiarati8/palimpsest (private), branch `main`; commits signed MohammadAminZiarati8 (repo-local git config) | User approval |
 | 2026-10-17 | D-68 | Art style = stylized 3D game-model look like AC Rebellion (big head ~2.5–3 heads, mature sculpted faces, matte detailed costumes); rules ART-1..5 in `art/style.md`. Real art in demo, not placeholders | User approval |
+| 2026-10-17 | D-69 | Characters = 2D cut-out sprites animated with bones (Unity 2D Animation + PSD Importer), not 3D models, not frame-by-frame. D-64 2D URP unchanged (ART-6) | User approval |

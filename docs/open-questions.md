@@ -19,7 +19,7 @@
 | Q-20 | Scope | Launch scope (Volumes, roster size, modes) — decide after the demo | Launch plan |
 | Q-21 | Platform | Which languages at launch (no Persian) | Localization |
 | Q-22 | Meta | Hub (the Margin as HQ?), dailies/missions, account level, guilds/social | Later milestones |
-| Q-23 | Production | Art & audio pipeline (artists, AI-assisted; 3D models vs pre-rendered 2D), team size, budget. Style decided: D-68 | Art, schedule |
+| Q-23 | Production | Art & audio pipeline (artists, AI-assisted, who cuts sprite parts), team size, budget. Style D-68, cut-out sprites D-69 | Art, schedule |
 | Q-24 | Brand | Game title (trademark check) | Store, marketing |
 | Q-25 | Enemies | Boss list per Volume (candidates in `gdd/10-enemies.md`) | GDD-2 / GDD-3 |
 | Q-26 | Story | Which legends appear / are rescued in each realm (candidates in `gdd/11-story.md`) | GDD-3 / GDD-4 |

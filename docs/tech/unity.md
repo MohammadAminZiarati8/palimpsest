@@ -3,7 +3,7 @@
 
 ## Setup
 - Unity 6 LTS, 2D URP. Android only, landscape (OVR-7). IL2CPP, ARM64.
-- UI: uGUI + TextMeshPro (D-65). Animation: PrimeTween. Async: UniTask. JSON: Newtonsoft (Unity package).
+- UI: uGUI + TextMeshPro (D-65). Characters: 2D Animation + PSD Importer (Unity official) for cut-out sprites (D-69, ART-6). Animation: PrimeTween. Async: UniTask. JSON: Newtonsoft (Unity package).
 - Login: Unity Authentication package. Net: HTTP+JSON via `UnityWebRequest` + UniTask; DTOs from `shared`.
 - Later: NuGetForUnity + SignalR client (live PvP).
 - `scripts/` copies the built `shared` DLL to `client/Assets/Plugins/Shared/` and `content/` to `client/Assets/_Game/Content/` (M0-6). Never edit those copies.
