@@ -34,7 +34,7 @@ namespace Game.Shared.Combat
             FightUnit attacker, SkillDef skill, FightUnit target, bool exposed)
         {
             int chance = CritChance(rules, attacker.Stats.CritChance, skill.CritChanceBonus, exposed);
-            bool crit = rng.RollPercent(chance);
+            bool crit = rng.RollPercent(chance) | attacker.SureCrit; // always roll: same RNG use either way
             int range = rules.SpreadPercent * SpreadSteps;
             int spread = rng.NextInt(-range, range + 1);
             int amount = Compute(rules, attacker.Attack, skill.DamagePercent, target.Defense,

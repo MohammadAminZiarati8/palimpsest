@@ -146,16 +146,63 @@ namespace Game.Shared.Combat
         }
 
         /// <summary>
+        /// Uses any skill: damaging (Reach Melee/Ranged) via <see cref="Attack"/>, else a support skill
+        /// on own side (heal, cleanse, Ward, effects, Fade). <paramref name="primary"/> must be in
+        /// <see cref="Targeting.Valid"/> (for Self / AllAllies any valid unit, e.g. the caster).
+        /// </summary>
+        public IReadOnlyList<Hit> UseSkill(FightUnit actor, SkillDef skill, FightUnit primary)
+        {
+            if (skill.Reach == Reach.Melee || skill.Reach == Reach.Ranged) return Attack(actor, skill, primary);
+            Check(actor, skill, primary);
+
+            var targets = Targeting.Hits(this, skill, primary);
+            var fx = Db.Combat.Effects;
+            foreach (var t in targets)
+            {
+                if (skill.HealPercent > 0)
+                    Heal(t, Pct((skill.HealOf == HealBasis.Target ? t : actor).MaxHp, skill.HealPercent));
+                if (skill.Cleanse > 0) Cleanse(t, skill.Cleanse);
+                if (skill.WardPercent > 0)
+                    ApplyEffect(t, StatusEffect.Ward, fx.WardRounds, actor, Pct(actor.MaxHp, skill.WardPercent));
+            }
+            ApplySkillEffects(actor, skill, targets);
+            if (skill.Special?.Type == SpecialType.Fade) actor.Fade(skill.Special.Rounds, _turn);
+            actor.StartCooldown(skill);
+            return new List<Hit>();
+        }
+
+        /// <summary>Restores HP up to max. Returns HP gained. Down units can't be healed.</summary>
+        public int Heal(FightUnit target, int amount)
+        {
+            if (target.IsDown || amount <= 0) return 0;
+            int gained = Math.Min(amount, target.MaxHp - target.Hp);
+            target.Hp += gained;
+            return gained;
+        }
+
+        /// <summary>
+        /// CMB-16 Shift: a champion swaps with an adjacent ally (costs its turn: call it as the turn's action).
+        /// </summary>
+        public void Shift(FightUnit actor, FightUnit ally)
+        {
+            if (IsOver) throw new InvalidOperationException("Fight is over");
+            if (actor.Side != Side.Heroes) throw new InvalidOperationException("Only champions Shift");
+            var line = _lines[actor.Side];
+            if (ally == actor || ally.Side != actor.Side || ally.IsDown || Math.Abs(ally.Line - actor.Line) != 1)
+                throw new ArgumentException($"{ally} is not next to {actor}");
+            int a = actor.Line, b = ally.Line;
+            line[a] = ally;
+            line[b] = actor;
+            Reindex(line);
+        }
+
+        /// <summary>
         /// Uses a damaging skill on <paramref name="primary"/> (must be in <see cref="Targeting.Valid"/>).
         /// Each unit hit rolls its own crit and spread (BAL-2), in hit order. Then skill effects land on the units hit (or Self) and the cooldown starts (CMB-42).
         /// </summary>
         public IReadOnlyList<Hit> Attack(FightUnit actor, SkillDef skill, FightUnit primary)
         {
-            if (IsOver) throw new InvalidOperationException("Fight is over");
-            if (actor.IsDown) throw new InvalidOperationException($"{actor} is Down");
-            if (!actor.CanUse(skill)) throw new InvalidOperationException($"{skill.Name} is on cooldown or Sealed");
-            if (!Targeting.Valid(this, actor, skill).Contains(primary))
-                throw new ArgumentException($"{primary} is not a valid target for {skill.Name}");
+            Check(actor, skill, primary);
 
             var hits = new List<Hit>();
             foreach (var target in Targeting.Hits(this, skill, primary))
@@ -166,15 +213,30 @@ namespace Game.Shared.Combat
             }
             // Apply after all rolls so a Down primary doesn't shift who Splash hits.
             foreach (var h in hits) h.HpLost = Damage(h.Target, h.Amount);
-            if (!IsOver)
-            {
-                foreach (var fx in skill.Effects)
-                    foreach (var u in fx.On == EffectOn.Self ? new[] { actor } : hits.Select(h => h.Target))
-                        if (!u.IsDown) ApplyEffect(u, fx.Type, fx.Rounds, actor);
-            }
+            if (!IsOver) ApplySkillEffects(actor, skill, hits.Select(h => h.Target));
+            actor.SureCrit = false; // Fade's sure crit is spent on this attack
             actor.StartCooldown(skill);
             return hits;
         }
+
+        private void Check(FightUnit actor, SkillDef skill, FightUnit primary)
+        {
+            if (IsOver) throw new InvalidOperationException("Fight is over");
+            if (actor.IsDown) throw new InvalidOperationException($"{actor} is Down");
+            if (!actor.CanUse(skill)) throw new InvalidOperationException($"{skill.Name} is on cooldown or Sealed");
+            if (!Targeting.Valid(this, actor, skill).Contains(primary))
+                throw new ArgumentException($"{primary} is not a valid target for {skill.Name}");
+        }
+
+        private void ApplySkillEffects(FightUnit actor, SkillDef skill, IEnumerable<FightUnit> targets)
+        {
+            foreach (var fx in skill.Effects)
+                foreach (var u in fx.On == EffectOn.Self ? new[] { actor } : targets)
+                    if (!u.IsDown) ApplyEffect(u, fx.Type, fx.Rounds, actor);
+        }
+
+        private static int Pct(int value, int percent) =>
+            (int)Math.Round(value * percent / 100m, MidpointRounding.AwayFromZero);
 
         /// <summary>
         /// Puts a CMB-40 effect on <paramref name="target"/> (BAL-15: same type refreshes).

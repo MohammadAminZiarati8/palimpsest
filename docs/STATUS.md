@@ -1,7 +1,7 @@
 # STATUS
 > Read every session. Keep under ~40 lines. Detailed history = git log.
 
-**Phase:** M2a Combat (single fight) · **Next:** M2a-T5 · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
+**Phase:** M2a Combat (single fight) · **Next:** M2a-T6 · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
 
 ## Done (details: git log, `decisions.md`)
 - GDD for demo (universe, combat v2, enemies, story, demo scope, 4 champions, BAL-1..20); stack D-62..66; art D-68..70
@@ -15,15 +15,15 @@ Rules: CMB-12..15, 25..27, 29, 31, 40..43 · BAL-2..4, 15..18, 20. Code in `shar
 - [x] T2 Fight core: slots row, Speed order (swappable, BAL-3), rounds, gap close, win/lose, round cap
 - [x] T3 Damage + targeting: BAL-2, crit, spread, rounding, Exposed (BAL-20), melee/ranged/Dive, Splash/Row; test BAL-2 table + "Inkslinger hit ≈ 10% Pell HP"
 - [x] T4 Status effects + cooldowns (CMB-40, BAL-15, CMB-42)
-- [ ] T5 Hero kit specials (Fade, self Def down, heal, Ward) + Shift
+- [x] T5 Hero kit specials (Fade, self Def down, heal, Ward) + Shift
 - [ ] T6 Enemy AI + intents (CMB-41) + determinism test (same seed + inputs = same result, A3)
 - [ ] T7 Unity fight screen, placeholder boxes, plays the sim (Unity MCP: ask cost first)
 - [ ] T8 Unity feedback (damage numbers, PrimeTween), win/lose, Seedbed 1–6 test-fight picker; user play-check
 - M2b later: Herald, doors/Join/Fall back, room options (Q7 room %/door heal, Q8 Margin Strike/Strike Out still to ask), Noise, Notice, Rewrite, Retreat
 
 ## Last session
-- 2026-10-17: M2a-T2..T4 done in `shared/Combat`. T2 `Fight` (lines, `Step`/`Run` + `ActHook`, Down + gap close, win/lose, round cap), `ITurnOrder` (BAL-3). T3 `DamageCalc` (BAL-2) + `Targeting` (CMB-12/13, D-78).
-- T4: `ApplyEffect` (CMB-40: stat up/down, Stun, Bleed, Ward, Seal), `Cleanse`, cooldowns (CMB-42) in `Attack`; turn = Bleed tick → act unless Stunned → end-of-turn ticks. 114 tests green.
-- D-82..84 Claude defaults (fight core, damage rolls, effect timing). Exposed only triggers once M2b adds rear positions.
-- Next: M2a-T5 kit specials (Fade, heal, Ward skills, Ally/AllAllies/Self areas) + Shift.
+- 2026-10-17: M2a-T2..T5 done in `shared/Combat`: `Fight` (lines, `Step`/`Run` + `ActHook`, Down + gap close, win/lose, round cap), `ITurnOrder` (BAL-3), `DamageCalc` (BAL-2), `Targeting` (CMB-12/13, D-78).
+- T4 effects/cooldowns (`ApplyEffect`, `Cleanse`, CMB-42); T5 `UseSkill` (heal, cleanse, Ward, Fade sure crit), `Heal`, `Shift` (CMB-16). 124 tests green.
+- D-82..85 Claude defaults (fight core, damage rolls, effect timing, Fade/Ally/Shift). Exposed only triggers once M2b adds rear positions.
+- Next: M2a-T6 enemy AI + intents (CMB-41, D-74) + determinism test. Open for T6: may Corrector heal itself? (ask user)
 - User: one question at a time, plain words, small demo, free maintained packages, state Claude usage cost before heavy tools.

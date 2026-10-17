@@ -52,6 +52,13 @@ namespace Game.Shared.Combat
         public int Line { get; internal set; }
         public IReadOnlyList<ActiveEffect> Effects => _effects;
 
+        /// <summary>Pell S3 Fade: own turns left untargetable by Single skills (ticks like effects, D-84).</summary>
+        public int FadeRounds { get; private set; }
+        private int _fadeTurn;
+        public bool IsFaded => FadeRounds > 0;
+        /// <summary>Fade: the next damaging skill crits on every hit, then this clears.</summary>
+        public bool SureCrit { get; internal set; }
+
         // CMB-40 / balancing.md effect strengths. Up and Down are separate effects and can both be on.
         public int Attack => Percent(Stats.Attack, StatusEffect.AttackUp, StatusEffect.AttackDown, _strength.AttackPercent);
         public int Defense => Percent(Stats.Defense, StatusEffect.DefenseUp, StatusEffect.DefenseDown, _strength.DefensePercent);
@@ -103,6 +110,13 @@ namespace Game.Shared.Combat
             return e;
         }
 
+        internal void Fade(int rounds, int turn)
+        {
+            FadeRounds = rounds;
+            _fadeTurn = turn;
+            SureCrit = true;
+        }
+
         internal void Remove(ActiveEffect e) => _effects.Remove(e);
 
         /// <summary>Newest debuff first (CMB-43 cleanse).</summary>
@@ -117,6 +131,7 @@ namespace Game.Shared.Combat
         {
             foreach (var slot in _cooldowns.Keys.ToList())
                 if (_cooldowns[slot] > 0) _cooldowns[slot]--;
+            if (FadeRounds > 0 && _fadeTurn != turn) FadeRounds--;
             foreach (var e in _effects.ToList())
             {
                 if (e.AppliedTurn == turn) continue;
