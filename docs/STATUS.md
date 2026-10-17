@@ -1,7 +1,7 @@
 # STATUS
 > Read every session. Keep under ~40 lines. Detailed history = git log.
 
-**Phase:** M2a Combat (single fight) · **Next:** M2a-T3 · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
+**Phase:** M2a Combat (single fight) · **Next:** M2a-T4 · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
 
 ## Done (details: git log, `decisions.md`)
 - GDD for demo (universe, combat v2, enemies, story, demo scope, 4 champions, BAL-1..20); stack D-62..66; art D-68..70
@@ -13,7 +13,7 @@ Rules: CMB-12..15, 25..27, 29, 31, 40..43 · BAL-2..4, 15..18, 20. Code in `shar
 - [x] T0 Docs: M2 questions answered (D-73..80)
 - [x] T1 Content: hero skills/effects (BAL skill table) + enemies C1/C2/C4/C5 (BAL-16..18) + loader checks
 - [x] T2 Fight core: slots row, Speed order (swappable, BAL-3), rounds, gap close, win/lose, round cap
-- [ ] T3 Damage + targeting: BAL-2, crit, spread, rounding, Exposed (BAL-20), melee/ranged/Dive, Splash/Row; test BAL-2 table + "Inkslinger hit ≈ 10% Pell HP"
+- [x] T3 Damage + targeting: BAL-2, crit, spread, rounding, Exposed (BAL-20), melee/ranged/Dive, Splash/Row; test BAL-2 table + "Inkslinger hit ≈ 10% Pell HP"
 - [ ] T4 Status effects + cooldowns (CMB-40, BAL-15, CMB-42)
 - [ ] T5 Hero kit specials (Fade, self Def down, heal, Ward) + Shift
 - [ ] T6 Enemy AI + intents (CMB-41) + determinism test (same seed + inputs = same result, A3)
@@ -22,8 +22,8 @@ Rules: CMB-12..15, 25..27, 29, 31, 40..43 · BAL-2..4, 15..18, 20. Code in `shar
 - M2b later: Herald, doors/Join/Fall back, room options (Q7 room %/door heal, Q8 Margin Strike/Strike Out still to ask), Noise, Notice, Rewrite, Retreat
 
 ## Last session
-- 2026-10-17: M2a-T2 done. `shared/Combat`: `Fight` (setup from ContentDb, lines Front-first, `Step`/`Run` with an `ActHook`, `Damage` placeholder → Down + gap close, win/lose, round cap 50), `FightUnit`, `ITurnOrder` + `SpeedTurnOrder` (BAL-3, ties champion → Front-most).
-- Fight holds the battle `SeededRandom` (A3) for T3. 86 tests green; Unity copy OK.
-- D-82: 1–3 per side, round cap = loss after round 50 not won (Claude default, reading of D-79).
-- Next: M2a-T3 damage + targeting (replace `Damage` placeholder with BAL-2 math).
+- 2026-10-17: M2a-T2 + T3 done. `shared/Combat`: `Fight` (lines Front-first, `Step`/`Run` + `ActHook`, `Attack`, `Damage` → Down + gap close, win/lose, round cap), `SpeedTurnOrder` behind `ITurnOrder` (BAL-3).
+- T3: `DamageCalc` (BAL-2, crit cap, Exposed +25%, spread, rounding), `Targeting` (melee nearest, ranged/Dive any, Splash D-78, Row). 101 tests green.
+- D-82 fight-core defaults, D-83 damage roll defaults (Claude defaults). Exposed only triggers once M2b adds rear positions.
+- Next: M2a-T4 status effects + cooldowns (CMB-40, BAL-15, CMB-42); FightUnit.Speed/Stats get effect modifiers there.
 - User: one question at a time, plain words, small demo, free maintained packages, state Claude usage cost before heavy tools.

@@ -85,3 +85,4 @@
 | 2026-10-17 | D-80 | Q-02 removed from roadmap blockers (settled by combat v2, D-10/D-11) | Stale reference |
 | 2026-10-17 | D-81 | Enemy growth (BAL-17) is linear like heroes (BAL-8): Lv1 × (1 + (L−1) × 9%), then Elite ×; growthPercent in `content/enemies.json` | User approval |
 | 2026-10-17 | D-82 | Fight core (M2a-T2): 1–3 units per side (CMB-11); Down unit leaves its slot, units behind step toward the centre; round cap = loss if not won by the end of round 50; turn order behind `ITurnOrder` (BAL-3) | Claude default (reading of D-79) |
+| 2026-10-17 | D-83 | Damage (M2a-T3): each unit hit rolls its own crit then spread (spread in 0.01% steps); Splash/Row targets fixed before anyone goes Down; Exposed check returns false until rear positions exist (Margin/Gutter/Bleed-through, M2b) | Claude default |

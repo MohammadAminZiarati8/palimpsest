@@ -33,6 +33,14 @@ namespace Game.Shared.Combat
     public enum FightOutcome { Ongoing, Won, Lost }
     public enum LossReason { None, HeroesDown, RoundCap }
 
+    public sealed class Hit
+    {
+        public FightUnit Target { get; }
+        public int Amount { get; }
+        public bool Crit { get; }
+        public Hit(FightUnit target, int amount, bool crit) { Target = target; Amount = amount; Crit = crit; }
+    }
+
     /// <summary>Called once per turn with the acting unit. Real skills/AI arrive in T3..T6.</summary>
     public delegate void ActHook(Fight fight, FightUnit actor);
 
@@ -118,7 +126,30 @@ namespace Game.Shared.Combat
         }
 
         /// <summary>
-        /// Removes HP (placeholder for T3 damage math). At 0 the unit is Down: its slot empties and
+        /// Uses a damaging skill on <paramref name="primary"/> (must be in <see cref="Targeting.Valid"/>).
+        /// Each unit hit rolls its own crit and spread (BAL-2), in hit order. Cooldowns/effects: T4.
+        /// </summary>
+        public IReadOnlyList<Hit> Attack(FightUnit actor, SkillDef skill, FightUnit primary)
+        {
+            if (IsOver) throw new InvalidOperationException("Fight is over");
+            if (actor.IsDown) throw new InvalidOperationException($"{actor} is Down");
+            if (!Targeting.Valid(this, actor, skill).Contains(primary))
+                throw new ArgumentException($"{primary} is not a valid target for {skill.Name}");
+
+            var hits = new List<Hit>();
+            foreach (var target in Targeting.Hits(this, skill, primary))
+            {
+                var (amount, crit) = DamageCalc.Roll(Random, Db.Combat, actor, skill, target,
+                    Targeting.IsExposed(actor, target));
+                hits.Add(new Hit(target, amount, crit));
+            }
+            // Apply after all rolls so a Down primary doesn't shift who Splash hits.
+            foreach (var h in hits) Damage(h.Target, h.Amount);
+            return hits;
+        }
+
+        /// <summary>
+        /// Removes HP (used by <see cref="Attack"/>, later Bleed). At 0 the unit is Down: its slot empties and
         /// the units behind it close the gap toward the centre (CMB-14, CMB-43).
         /// </summary>
         public void Damage(FightUnit target, int amount)
