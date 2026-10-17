@@ -25,9 +25,9 @@
 ## Row & lines
 - **CMB-11** The fight is one row of slots. Default: `ours [Back][Middle][Front] ⚔ [Front][Middle][Back] enemies`. A boss may take 2 slots.
 - **CMB-12** **Melee hits the nearest enemy on either side** (allies don't block, enemies do). **Ranged** hits anyone. Every champion can always act.
-- **CMB-13** Skill **Area**: Single · Splash (target + neighbour) · Row (all enemies).
+- **CMB-13** Skill **Area**: Single · Splash (target + the enemy behind it, else the other side; never allies — D-78) · Row (all enemies).
 - **CMB-14** When a slot empties, units close the gap.
-- **CMB-15** **Exposed:** a unit hit from its rear takes bonus crit chance. Applies to both sides.
+- **CMB-15** **Exposed:** a unit hit from its rear takes bonus crit chance (BAL-20). Applies to both sides.
 - **CMB-16** Line-breaking skills: **Dive** (melee reaches enemy Back), **Pull**, **Push**, **Guard** (take hits for an ally), **Shift** (any champion: swap with adjacent ally, costs turn).
 
 ## Deployment & entry points
@@ -60,6 +60,7 @@
 - **CMB-24** Enemies never start a fight.
 - **CMB-25** A **round** = every unit acts once in **Speed** order (ties → champion first).
 - **CMB-26** Enemies show their next action (**intent**).
+- **CMB-41** Enemy AI (D-74): intent fixed at round start. Special skill when ready (Corrector heals only an ally at ≤75% HP; Blotter Soak only once damaged), else S1. Melee → nearest hero; ranged → lowest HP %, tie → front-most. Target invalid when acting → retarget by the same rule.
 
 ## Skills & stats
 - **CMB-27** 3 skills per champion: **S1** basic (no cooldown) · **S2**, **S3** active (cooldown in rounds) or passive. Each skill tagged Reach (Melee/Ranged) + Area.
@@ -67,6 +68,8 @@
 - **CMB-29** Stats: HP, Attack, Defense, Speed, Crit Chance, Crit Damage, Accuracy. Accuracy counters enemy-only **Evasion**.
 - **CMB-30** Lifesteal and % stats are gear substats only.
 - **CMB-31** Damage = Attack × skill % × Defense reduction (formula → balancing).
+- **CMB-42** Cooldowns (D-77): all skills ready at fight start; reset every scene. cd N: used on turn 1 → ready on turn 1+N. Ticks at end of own turn; skipped (Stun) turns count.
+- **CMB-43** Resolution details (D-79): turn order rebuilt each round start, ties champion → Front-most; joiners act next round. Bleed ticks at start of the affected unit's turn; Ward absorbs it. Cleanse removes the newest debuff. Dive = melee may target any enemy. Gaps close toward the centre. Win = all enemies on the field Down (pending arrivals cancelled). Round cap (config, 50) = loss.
 - **CMB-40** Status effects (shared by champions and enemies, D-16): **Stun** (skip turn) · **Bleed** (damage per round) · **Seal** (one skill locked = Redaction) · **Ward** (absorbs damage) · **Attack / Defense / Speed / Accuracy up or down**. More only after the demo.
 
 ## Obstacles & scene features

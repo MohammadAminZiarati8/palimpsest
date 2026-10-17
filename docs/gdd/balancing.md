@@ -4,10 +4,11 @@
 
 ## Demo — combat math
 - **BAL-1** Scale: Medium. Rare Lv1 average ≈ HP 1,000 · Atk 100 · Def 50 · Spd 100 (D-51).
-- **BAL-2** Damage = Attack × skill % × 100 / (100 + Defense) (D-52). `100` = config `defenseK`. Crit: × (1 + Crit Damage). Random spread ±5%.
+- **BAL-2** Damage = Attack × skill % × 100 / (100 + Defense) (D-52). `100` = config `defenseK`. Crit: × (1 + Crit Damage). Random spread ±5% (uniform). Round half-away-from-zero, min 1 (D-79).
   | Defense | 50 | 100 | 200 |
   |---|---|---|---|
   | Blocked | 33% | 50% | 67% |
+- **BAL-20** Exposed (CMB-15): +25% crit chance, additive, cap 100% (D-75).
 - **BAL-3** Speed only sets turn order (CMB-25); keep values ~90–120. Turn-order rule lives in one swappable component; may change after the demo (e.g. turn meter → wider Speed range) (D-51).
 - **BAL-4** Splash hits both targets at the listed %. Heals/Wards from Support scale with caster max HP.
 
@@ -88,7 +89,7 @@
   | ▼ | 250 | 70 | 20 | 92 |
   | ● | 400 | 100 | 35 | 99 |
   | ▲ | 600 | 130 | 50 | — |
-- **BAL-17** Enemy growth +9% HP/Atk/Def per level. Elite: extra HP ×3, Atk ×1.5. Evasion 0 in the demo.
+- **BAL-17** Enemy growth +9% HP/Atk/Def per level. Elite: extra HP ×3, Atk ×1.5. Evasion 0 in the demo. All enemies Crit Chance 5%, Crit Damage +50% (per-enemy override in content, D-76).
 - **BAL-18** Kits:
   | Censor | Skills |
   |---|---|
