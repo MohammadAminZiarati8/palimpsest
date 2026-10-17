@@ -32,9 +32,8 @@ Campaign rewards/stars Q-05, Q-06 · Dungeons Q-14 · Gear Q-11, Q-12 · Awakeni
 - [x] Content JSON (`version`, `stats`, `classes`, `champions`) + loader with validation; stat calc (BAL-5..9) + level/XP caps (CHM-7, BAL-10/11); 39 shared tests; Unity loads content via Resources
 
 ## Last session
-- 2026-10-17: Q-04 → uGUI (D-65). Architecture A1–A11 approved (D-66): added safe retries, ledger, content version, client layers, stateless server, modules.
-- M0-7, M0-1 (repo on GitHub), M0-2 (Claude read-deny rules), M0-3 (shared lib + SeededRandom, A3) done.
-- Art style decided (D-68, `art/style.md`): AC Rebellion-like look; real art in demo; cut-out 2D sprites (D-69), stays 2D URP. Demo art made by Claude + Gemini + ChatGPT Plus (D-70, ART-7).
-- User rule: free, actively maintained, community-recommended packages; no cloud CI (local scripts).
-- M0-4 server skeleton + M0-5 Unity project done. User wants tool usage cost checked before heavy tools.
-- User prefers questions one at a time, plain words, small demo scope. Repo on GitHub (M0-1); commit identity set per-repo (MohammadAminZiarati8).
+- 2026-10-17: uGUI (D-65), architecture A1–A11 (D-66), art style AC Rebellion-like + cut-out 2D sprites + AI art pipeline (D-68..70, `art/style.md`).
+- M0 done (repo github.com/MohammadAminZiarati8/palimpsest, server skeleton, Unity 6.3 client, auto-copy shared DLL + content). M1 done (content JSON, loader, stat calc, 41 tests).
+- Open for user: install Docker Desktop (then `dotnet test` runs the DB health test). Art: Margo parts-sheet test (ART-7) not tried yet.
+- Next: M2 combat — read `gdd/02-combat.md` by rule ID; sim in `shared` with `SeededRandom` (A3); Unity prototype vs test enemies (BAL-16..18).
+- User: one question at a time, plain words, small demo, free maintained packages, no cloud CI, state Claude usage cost before heavy tools.
