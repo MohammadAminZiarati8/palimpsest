@@ -1,0 +1,63 @@
+{
+  "_doc": "Campaign stages in play order (CMB-3..8, CMB-17, CMB-22, ENM-9). Lineups D-95. enemyLevel BAL-19. heroes = champions the story allows. Enemies Front first; arrivals join the end of the enemy line after inRounds; reinforcements = what a Herald's Ring writes in.",
+  "stages": [
+    {
+      "id": "P1", "name": "Prologue 1", "chapter": "Prologue", "enemyLevel": 1, "heroes": ["c01", "c02"],
+      "scenes": [
+        { "capacity": 2, "alert": "Watching", "enemies": ["C1", "C2"] }
+      ]
+    },
+    {
+      "id": "P2", "name": "Prologue 2", "chapter": "Prologue", "enemyLevel": 2, "heroes": ["c01", "c02"],
+      "scenes": [
+        { "capacity": 2, "alert": "Watching", "enemies": ["C1"] },
+        { "capacity": 2, "alert": "Watching", "enemies": ["C1", "C2"], "arrivals": [ { "enemy": "C2", "inRounds": 2 } ] }
+      ]
+    },
+    {
+      "id": "S1", "name": "Seedbed 1", "chapter": "Seedbed", "enemyLevel": 4, "heroes": ["c01", "c02", "c04"],
+      "scenes": [
+        { "capacity": 2, "alert": "Reading", "enemies": ["C2", "C2"] },
+        { "capacity": 3, "alert": "Watching", "enemies": ["C1", "C2"] }
+      ]
+    },
+    {
+      "id": "S2", "name": "Seedbed 2", "chapter": "Seedbed", "enemyLevel": 6, "heroes": ["c01", "c02", "c04"],
+      "scenes": [
+        { "capacity": 3, "alert": "Reading", "marginPath": true, "enemies": ["C1", "C2"] },
+        { "capacity": 3, "alert": "Watching", "enemies": ["C1", "C3", "C2"], "reinforcements": ["C2"] }
+      ]
+    },
+    {
+      "id": "S3", "name": "Seedbed 3", "chapter": "Seedbed", "enemyLevel": 8, "heroes": ["c01", "c02", "c04"],
+      "scenes": [
+        { "capacity": 1, "alert": "Reading", "enemies": ["C2"] },
+        { "capacity": 2, "alert": "Watching", "enemies": ["C1", "C4"] },
+        { "capacity": 3, "alert": "Watching", "enemies": ["C1", "C4", "C2"], "arrivals": [ { "enemy": "C2", "inRounds": 2 } ] }
+      ]
+    },
+    {
+      "id": "S4", "name": "Seedbed 4", "chapter": "Seedbed", "enemyLevel": 10, "heroes": ["c01", "c02", "c04"],
+      "scenes": [
+        { "capacity": 2, "alert": "Reading", "enemies": ["C2", "C2"] },
+        { "capacity": 3, "alert": "Watching", "enemies": ["C1", "C1", "C4"] },
+        { "capacity": 3, "alert": "Watching", "enemies": ["C1", "C3", "C4"], "reinforcements": ["C2"] }
+      ]
+    },
+    {
+      "id": "S5", "name": "Seedbed 5", "chapter": "Seedbed", "enemyLevel": 12, "heroes": ["c01", "c02", "c04"],
+      "scenes": [
+        { "capacity": 3, "alert": "Reading", "marginPath": true, "enemies": ["C1", "C2", "C4"] },
+        { "capacity": 2, "alert": "Watching", "enemies": ["C1", "C3"], "reinforcements": ["C2"] },
+        { "capacity": 3, "alert": "Watching", "enemies": ["C1", "C2", "C4"], "arrivals": [ { "enemy": "C1", "inRounds": 3 } ] }
+      ]
+    },
+    {
+      "id": "S6", "name": "Seedbed 6", "chapter": "Seedbed", "enemyLevel": 14, "heroes": ["c01", "c02", "c04"],
+      "scenes": [
+        { "capacity": 3, "alert": "Reading", "enemies": ["C1", "C2", "C3"], "reinforcements": ["C2"] },
+        { "capacity": 3, "alert": "Watching", "enemies": ["C5", "C2", "C4"] }
+      ]
+    }
+  ]
+}

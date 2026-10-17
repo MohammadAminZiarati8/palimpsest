@@ -51,7 +51,7 @@ public class CombatContentTests
     [Fact]
     public void Enemies_MatchBal18AndCmb41()
     {
-        Assert.Equal(["C1", "C2", "C4", "C5"], Db.Enemies.Keys.Order());
+        Assert.Equal(["C1", "C2", "C3", "C4", "C5"], Db.Enemies.Keys.Order());
         Assert.Equal(AiWhen.SelfDamaged, Db.Enemy("C1").Skills[1].Ai!.When);
         var fluid = Db.Enemy("C4").Skills[1];
         Assert.Equal((AiWhen.AllyHpAtOrBelow, 75, HealBasis.Target, 25, 2),
@@ -62,7 +62,7 @@ public class CombatContentTests
 
     [Fact]
     public void UnknownEnemy_Throws() =>
-        Assert.Throws<ContentException>(() => Db.Enemy("C3"));
+        Assert.Throws<ContentException>(() => Db.Enemy("C9"));
 
     [Theory]
     [InlineData("combat", "\"roundCap\": 50", "\"roundCap\": 0", "roundCap must be >= 1")]

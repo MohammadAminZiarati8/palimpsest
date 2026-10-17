@@ -1,7 +1,7 @@
 # STATUS
 > Read every session. Keep under ~40 lines. Detailed history = git log.
 
-**Phase:** M2a Combat (single fight) · **Next:** M2b-T1 (stages.json, content Proposed for user OK) · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
+**Phase:** M2a Combat (single fight) · **Next:** M2b-T2 stage sim · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
 
 ## Done (details: git log, `decisions.md`)
 - GDD for demo (universe, combat v2, enemies, story, demo scope, 4 champions, BAL-1..20); stack D-62..66; art D-68..70
@@ -23,7 +23,7 @@ Rules: CMB-12..15, 25..27, 29, 31, 40..43 · BAL-2..4, 15..18, 20. Code in `shar
 ## M2b — stage flow (task split approved, D-90)
 Rules: CMB-3..10, 17..23, 33..36 · BAL-21..24 (D-91..94). Code in `shared/Stages`, tests in `shared.Tests`.
 - [x] T0 Docs: ask Q7 (room option %, door heal) + Q8 (Margin Strike, Strike Out numbers), one at a time
-- [ ] T1 Content: `stages.json` (Prologue 1–2, Seedbed 1–6: scenes, capacity, enemies, nearby arrivals, Herald) + loader checks
+- [x] T1 Content: `stages.json` (Prologue 1–2, Seedbed 1–6: scenes, capacity, enemies, nearby arrivals, Herald) + loader checks
 - [ ] T2 Stage sim: scenes in order, party pick per scene (CMB-3/8), HP carries, door heal, Down for stage, fail, Retreat, stars (CMB-33..36)
 - [ ] T3 Join / Fall back (CMB-10), nearby arrivals (CMB-22), Herald reinforcements
 - [ ] T4 Room options + Noise (CMB-7, CMB-19): Clash, Margin Strike, Strike Out, Between the Lines, Spin a Tale
@@ -33,8 +33,8 @@ Rules: CMB-3..10, 17..23, 33..36 · BAL-21..24 (D-91..94). Code in `shared/Stage
 - [ ] T8 Unity: play the whole Seedbed; user play-check
 
 ## Last session
-- 2026-10-17: M2a done (T2..T8, one session): sim in `shared/Combat` (136 tests), Unity *Game/Test Fight* with Seedbed 1–6 picker (D-88), user play-checked.
-- D-89 Corrector may self-heal (Q-27). D-90 M2b split. M2b-T0 done: D-91 door heal 15% (BAL-21), D-92 room option % (BAL-22), D-93 Margin Strike (BAL-23), D-94 Strike Out (BAL-24).
-- D-82..87 Claude defaults (fight core, damage rolls, effect timing, Fade/Ally/Shift, AI order, uGUI Text placeholder).
-- Next: M2b-T1 `stages.json` — Claude drafts Prologue 1–2 + Seedbed 1–6 scenes as Proposed, user approves, then loader.
+- 2026-10-17: M2a done (T2..T8, one session): sim in `shared/Combat`, Unity *Game/Test Fight* with Seedbed 1–6 picker (D-88), user play-checked.
+- M2b-T0: D-91 door heal 15% (BAL-21), D-92 room option % (BAL-22), D-93 Margin Strike (BAL-23), D-94 Strike Out (BAL-24). D-89 Corrector may self-heal.
+- M2b-T1: `content/stages.json` (P1–P2, S1–S6, D-95) + `StageModels.cs` + loader checks; C3 Herald in `enemies.json` (Ring = SpecialType, no effect until T3). 150 tests green.
+- Next: M2b-T2 stage sim in `shared/Stages` (scenes, party per scene, HP carry, door heal, Down for stage, Retreat, stars).
 - User: one question at a time, plain words, small demo, free maintained packages, state Claude usage cost before heavy tools.

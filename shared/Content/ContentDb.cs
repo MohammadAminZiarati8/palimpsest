@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Game.Shared.Content
 {
@@ -21,11 +22,13 @@ namespace Game.Shared.Content
         /// <summary>Enemy tiers, growth, Elite and crit defaults. Enemy list: <see cref="Enemies"/>.</summary>
         public EnemyFile EnemyRules { get; }
         public IReadOnlyDictionary<string, EnemyDef> Enemies { get; }
+        /// <summary>Campaign stages in play order (stages.json).</summary>
+        public IReadOnlyList<StageDef> Stages { get; }
 
         internal ContentDb(int version, StatRules stats,
             IReadOnlyDictionary<HeroClass, ClassDef> classes, IReadOnlyDictionary<string, ChampionDef> champions,
             CombatRules combat, IReadOnlyDictionary<string, ChampionKit> kits,
-            EnemyFile enemyRules, IReadOnlyDictionary<string, EnemyDef> enemies)
+            EnemyFile enemyRules, IReadOnlyDictionary<string, EnemyDef> enemies, IReadOnlyList<StageDef> stages)
         {
             Version = version;
             Stats = stats;
@@ -35,6 +38,7 @@ namespace Game.Shared.Content
             Kits = kits;
             EnemyRules = enemyRules;
             Enemies = enemies;
+            Stages = stages;
         }
 
         public ChampionDef Champion(string id) =>
@@ -45,6 +49,9 @@ namespace Game.Shared.Content
 
         public ChampionKit Kit(string championId) =>
             Kits.TryGetValue(championId, out var k) ? k : throw new ContentException($"Champion '{championId}' has no kit");
+
+        public StageDef Stage(string id) =>
+            Stages.FirstOrDefault(s => s.Id == id) ?? throw new ContentException($"Unknown stage '{id}'");
 
         public EnemyDef Enemy(string id) =>
             Enemies.TryGetValue(id, out var e) ? e : throw new ContentException($"Unknown enemy '{id}'");

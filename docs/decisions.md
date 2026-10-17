@@ -97,3 +97,4 @@
 | 2026-10-17 | D-92 | Room option % (CMB-19, BAL-22): 50% ± 5%/level vs scene (party average for party options), Assassin +15% Strike Out / Between the Lines, Support +15% Spin a Tale, clamp 5–95%, no rank/stars in demo | User approval |
 | 2026-10-17 | D-93 | Margin Strike (BAL-23): each hero in the scene gets one free pre-round action in Speed order, +50% crit chance (cap 100%), enemies don't act, cooldowns as normal | User approval |
 | 2026-10-17 | D-94 | Strike Out (BAL-24): any one non-Elite target; success removes it (none left = scene cleared), failure = target acts first then fight; solo Assassin then fights | User approval |
+| 2026-10-17 | D-95 | Stage lineups `content/stages.json` (Prologue 1–2 Margo+Pell; Seedbed 1–6 +White Snake, Libby after S6; Heralds in S2/S4/S5/S6 call an Inkslinger; S6 finale Editor+Inkslinger+Corrector). C3 Herald added: Low/Low/Low/Medium, Back, S1 Ring (countdown 2) | User approval |

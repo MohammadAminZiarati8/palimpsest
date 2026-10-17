@@ -37,6 +37,7 @@ namespace Game.Shared.Content
             var combat = Parse<CombatRules>(source, "combat");
             var kits = Parse<SkillFile>(source, "skills").Kits;
             var enemyFile = Parse<EnemyFile>(source, "enemies");
+            var stages = Parse<StageFile>(source, "stages").Stages;
 
             var errors = new List<string>();
             ValidateStats(stats, errors);
@@ -48,6 +49,7 @@ namespace Game.Shared.Content
             ValidateCombat(combat, errors);
             ValidateKits(kits, champions, combat, errors);
             ValidateEnemies(enemyFile, combat, errors);
+            ValidateStages(stages, champions, enemyFile, combat, errors);
             if (errors.Count > 0)
                 throw new ContentException("Invalid content:\n- " + string.Join("\n- ", errors));
 
@@ -59,7 +61,8 @@ namespace Game.Shared.Content
                 combat,
                 kits.GroupBy(k => k.Champion).ToDictionary(g => g.Key, g => g.First()),
                 enemyFile,
-                enemyFile.Enemies.GroupBy(e => e.Id).ToDictionary(g => g.Key, g => g.First()));
+                enemyFile.Enemies.GroupBy(e => e.Id).ToDictionary(g => g.Key, g => g.First()),
+                stages);
         }
 
         private static T Parse<T>(IContentSource source, string name) where T : class
@@ -219,6 +222,42 @@ namespace Game.Shared.Content
             bool doesSomething = s.DamagePercent > 0 || s.HealPercent > 0 || s.WardPercent > 0 || s.Cleanse > 0
                                  || s.Effects.Count > 0 || s.Special != null;
             if (!doesSomething) errors.Add($"{who}: skill does nothing");
+        }
+
+        /// <summary>D-95 stages: known ids, CMB-8 capacity, 1–3 enemies, Herald ⇔ reinforcements.</summary>
+        private static void ValidateStages(List<StageDef> stages, List<ChampionDef> champions, EnemyFile enemyFile,
+            CombatRules combat, List<string> errors)
+        {
+            AddDuplicates(stages.Select(s => s.Id), "stage", errors);
+            var heroIds = new HashSet<string>(champions.Select(c => c.Id));
+            var enemies = enemyFile.Enemies.GroupBy(e => e.Id).ToDictionary(g => g.Key, g => g.First());
+            foreach (var st in stages)
+            {
+                string who = $"stage '{st.Id}'";
+                if (string.IsNullOrWhiteSpace(st.Id)) errors.Add("stage with empty id");
+                if (string.IsNullOrWhiteSpace(st.Name)) errors.Add($"{who}: empty name");
+                if (string.IsNullOrWhiteSpace(st.Chapter)) errors.Add($"{who}: empty chapter");
+                if (st.EnemyLevel < 1) errors.Add($"{who}: enemyLevel must be >= 1");
+                if (st.Heroes.Count == 0) errors.Add($"{who}: no heroes");
+                foreach (var h in st.Heroes.Where(h => !heroIds.Contains(h))) errors.Add($"{who}: unknown hero '{h}'");
+                if (st.Scenes.Count == 0) errors.Add($"{who}: no scenes");
+                for (int i = 0; i < st.Scenes.Count; i++)
+                {
+                    var sc = st.Scenes[i];
+                    string where = $"{who} scene {i + 1}";
+                    CheckRange(sc.Capacity, 1, 3, $"{where}: capacity", errors);
+                    if (sc.Alert == Alert.Unset) errors.Add($"{where}: missing alert");
+                    CheckRange(sc.Enemies.Count, 1, 3, $"{where}: enemy count", errors);
+                    var ids = sc.Enemies.Concat(sc.Arrivals.Select(a => a.Enemy)).Concat(sc.Reinforcements);
+                    foreach (var id in ids.Where(id => !enemies.ContainsKey(id)).Distinct())
+                        errors.Add($"{where}: unknown enemy '{id}'");
+                    foreach (var a in sc.Arrivals)
+                        CheckRange(a.InRounds, 1, combat.RoundCap, $"{where}: arrival {a.Enemy} inRounds", errors);
+                    bool herald = sc.Enemies.Any(id => enemies.TryGetValue(id, out var e) && e.Role == EnemyRole.Herald);
+                    if (herald && sc.Reinforcements.Count == 0) errors.Add($"{where}: Herald needs reinforcements (ENM-9)");
+                    if (!herald && sc.Reinforcements.Count > 0) errors.Add($"{where}: reinforcements without a Herald");
+                }
+            }
         }
 
         private static void CheckRange(int value, int min, int max, string what, List<string> errors)

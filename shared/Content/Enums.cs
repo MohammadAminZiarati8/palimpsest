@@ -38,8 +38,8 @@ namespace Game.Shared.Content
     /// <summary>Whose max HP a heal scales with (BAL-4 Support = caster; Corrector = target).</summary>
     public enum HealBasis { Unset, Caster, Target }
 
-    /// <summary>Kit-specific actions that aren't shared status effects. Fade = Pell S3.</summary>
-    public enum SpecialType { None, Fade }
+    /// <summary>Kit-specific actions that aren't shared status effects. Fade = Pell S3. Ring = Herald countdown (ENM-9).</summary>
+    public enum SpecialType { None, Fade, Ring }
 
     /// <summary>CMB-41: when the enemy AI may pick a special skill.</summary>
     public enum AiWhen { Always, SelfDamaged, AllyHpAtOrBelow }
