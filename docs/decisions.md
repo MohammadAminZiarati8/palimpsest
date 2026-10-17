@@ -96,3 +96,4 @@
 | 2026-10-17 | D-91 | Door heal (CMB-9, BAL-21): 15% max HP per scene waited at the door (config) | User approval |
 | 2026-10-17 | D-92 | Room option % (CMB-19, BAL-22): 50% ± 5%/level vs scene (party average for party options), Assassin +15% Strike Out / Between the Lines, Support +15% Spin a Tale, clamp 5–95%, no rank/stars in demo | User approval |
 | 2026-10-17 | D-93 | Margin Strike (BAL-23): each hero in the scene gets one free pre-round action in Speed order, +50% crit chance (cap 100%), enemies don't act, cooldowns as normal | User approval |
+| 2026-10-17 | D-94 | Strike Out (BAL-24): any one non-Elite target; success removes it (none left = scene cleared), failure = target acts first then fight; solo Assassin then fights | User approval |
