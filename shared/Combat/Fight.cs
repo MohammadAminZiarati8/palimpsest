@@ -15,12 +15,16 @@ namespace Game.Shared.Combat
         public int Rank { get; set; } = 1;
         /// <summary>CMB-33: HP carried from the last scene; null = full.</summary>
         public int? Hp { get; set; }
+        /// <summary>CMB-17 entry point: Main Door, Margin (Behind) or Gutter. Join always uses the Main Door.</summary>
+        public Spot Spot { get; set; }
     }
 
     public sealed class EnemyEntry
     {
         public string EnemyId { get; set; } = "";
         public int Level { get; set; } = 1;
+        /// <summary>CMB-18: Main, Bleed-through (Behind) or our Gutter. Arrivals/reinforcements are always Main.</summary>
+        public Spot Spot { get; set; }
     }
 
     /// <summary>CMB-22 nearby enemy: joins the end of the enemy line after InRounds rounds.</summary>
@@ -31,7 +35,10 @@ namespace Game.Shared.Combat
         public int InRounds { get; set; }
     }
 
-    /// <summary>One scene's fight. Lists are in line order, Front first (CMB-11).</summary>
+    /// <summary>
+    /// One scene's fight. Lists are in line order, Front first (CMB-11); flankers (Spot) in order from
+    /// the centre outward. Max 3 per side, flankers included.
+    /// </summary>
     public sealed class FightSetup
     {
         public List<HeroEntry> Heroes { get; set; } = new List<HeroEntry>();
@@ -86,6 +93,8 @@ namespace Game.Shared.Combat
             [Side.Heroes] = new List<FightUnit>(),
             [Side.Enemies] = new List<FightUnit>(),
         };
+        /// <summary>The whole row, left (our Main Door end) to right, no holes (CMB-11, CMB-14).</summary>
+        private readonly List<FightUnit> _row = new List<FightUnit>();
         private readonly List<FightUnit> _units = new List<FightUnit>();
         private readonly Queue<FightUnit> _queue = new Queue<FightUnit>();
         private readonly ITurnOrder _order;
@@ -140,8 +149,14 @@ namespace Game.Shared.Combat
                 _incoming.Add((new EnemyEntry { EnemyId = a.EnemyId, Level = a.Level }, a.InRounds));
             }
 
-            foreach (var h in setup.Heroes) AddHero(h);
-            foreach (var e in setup.Enemies) AddEnemy(e);
+            var heroes = setup.Heroes.Select(h => (Unit: AddHero(h), h.Spot)).ToList();
+            var enemies = setup.Enemies.Select(e => (Unit: AddEnemy(e), e.Spot)).ToList();
+            foreach (var (u, spot) in heroes.Concat(enemies)) u.Spot = spot;
+            var left = Half(heroes, enemies);
+            left.Reverse();
+            _row.AddRange(left);
+            _row.AddRange(Half(enemies, heroes));
+            Reindex();
 
             _opening = setup.Opening;
             _openingCrit = setup.OpeningCritBonus;
@@ -149,8 +164,19 @@ namespace Game.Shared.Combat
             {
                 if (_opening != Side.Enemies || setup.OpeningEnemyIndex >= setup.Enemies.Count)
                     throw new ArgumentException("OpeningEnemyIndex needs an enemy opening and a valid index");
-                _openingOnly = _lines[Side.Enemies][setup.OpeningEnemyIndex];
+                _openingOnly = enemies[setup.OpeningEnemyIndex].Unit;
             }
+        }
+
+        /// <summary>One half of the row from the centre outward: own Front, foes in its Gutter, own rest, foes Behind it.</summary>
+        private static List<FightUnit> Half(List<(FightUnit Unit, Spot Spot)> own, List<(FightUnit Unit, Spot Spot)> foes)
+        {
+            var main = own.Where(x => x.Spot == Spot.Main).Select(x => x.Unit).ToList();
+            var half = main.Take(1).ToList();
+            half.AddRange(foes.Where(x => x.Spot == Spot.Gutter).Select(x => x.Unit));
+            half.AddRange(main.Skip(1));
+            half.AddRange(foes.Where(x => x.Spot == Spot.Behind).Select(x => x.Unit));
+            return half;
         }
 
         /// <summary>Champions still waiting at the door (CMB-10).</summary>
@@ -172,7 +198,13 @@ namespace Game.Shared.Combat
             if (_lines[Side.Heroes].Count >= _heroCapacity)
                 throw new InvalidOperationException($"Scene is full ({_heroCapacity}, CMB-8)");
             _bench.Remove(entry);
-            return AddHero(entry);
+            var unit = AddHero(entry);
+            // Main Door end: left of our line, inside any Bleed-through enemies (D-105).
+            int at = 0;
+            while (at < _row.Count && _row[at].Side == Side.Enemies && _row[at].Spot == Spot.Behind) at++;
+            _row.Insert(at, unit);
+            Reindex();
+            return unit;
         }
 
         /// <summary>
@@ -184,10 +216,7 @@ namespace Game.Shared.Combat
             if (IsOver) throw new InvalidOperationException("Fight is over");
             if (hero.Side != Side.Heroes || hero.IsDown || hero.Line < 0)
                 throw new ArgumentException($"{hero} can't fall back");
-            var line = _lines[Side.Heroes];
-            line.Remove(hero);
-            hero.Line = -1;
-            Reindex(line);
+            Remove(hero);
             _bench.Add(new HeroEntry { ChampionId = hero.DefId, Level = hero.Level, Rank = hero.Rank, Hp = hero.Hp });
             _fallenBack.Add(hero);
         }
@@ -235,20 +264,23 @@ namespace Game.Shared.Combat
         /// <summary>CMB-22: enemies due (after their rounds) enter while a slot is free (D-97).</summary>
         private void BringInArrivals()
         {
-            var line = _lines[Side.Enemies];
             foreach (var a in _incoming.ToList())
             {
-                if (Round <= a.AfterRound || line.Count >= MaxSlots) continue;
+                if (Round <= a.AfterRound || _lines[Side.Enemies].Count >= MaxSlots) continue;
                 _incoming.Remove(a);
-                AddEnemy(a.Entry);
+                _row.Add(AddEnemy(a.Entry)); // far end: may land behind a Margin flanker (CMB-22)
+                Reindex();
             }
         }
 
         /// <summary>Enemy intent for this round (CMB-26, CMB-41), fixed at round start. Null = none.</summary>
         public Intent? IntentOf(FightUnit unit) => _intents.TryGetValue(unit, out var i) ? i : null;
 
-        /// <summary>Units on the field for a side, Front first.</summary>
+        /// <summary>Units on the field for a side: Main units Front first, then flankers.</summary>
         public IReadOnlyList<FightUnit> Line(Side side) => _lines[side];
+
+        /// <summary>Everyone on the field, left (our Main Door end) to right; index = <see cref="FightUnit.Pos"/>.</summary>
+        public IReadOnlyList<FightUnit> Row => _row;
 
         /// <summary>
         /// Plays one turn: starts a new round when the current one is used up (CMB-43 order rebuild),
@@ -312,7 +344,7 @@ namespace Game.Shared.Combat
             if (skill.Reach == Reach.Melee || skill.Reach == Reach.Ranged) return Attack(actor, skill, primary);
             Check(actor, skill, primary);
 
-            var targets = Targeting.Hits(this, skill, primary);
+            var targets = Targeting.Hits(this, skill, primary, actor);
             var fx = Db.Combat.Effects;
             foreach (var t in targets)
             {
@@ -345,13 +377,13 @@ namespace Game.Shared.Combat
         {
             if (IsOver) throw new InvalidOperationException("Fight is over");
             if (actor.Side != Side.Heroes) throw new InvalidOperationException("Only champions Shift");
-            var line = _lines[actor.Side];
-            if (ally == actor || ally.Side != actor.Side || ally.IsDown || Math.Abs(ally.Line - actor.Line) != 1)
+            if (ally == actor || ally.Side != actor.Side || ally.IsDown || Math.Abs(ally.Line - actor.Line) != 1
+                || actor.Spot != Spot.Main || ally.Spot != Spot.Main)
                 throw new ArgumentException($"{ally} is not next to {actor}");
-            int a = actor.Line, b = ally.Line;
-            line[a] = ally;
-            line[b] = actor;
-            Reindex(line);
+            int a = actor.Pos, b = ally.Pos;
+            _row[a] = ally;
+            _row[b] = actor;
+            Reindex();
         }
 
         /// <summary>
@@ -363,7 +395,7 @@ namespace Game.Shared.Combat
             Check(actor, skill, primary);
 
             var hits = new List<Hit>();
-            foreach (var target in Targeting.Hits(this, skill, primary))
+            foreach (var target in Targeting.Hits(this, skill, primary, actor))
             {
                 var (amount, crit) = DamageCalc.Roll(Random, Db.Combat, actor, skill, target,
                     Targeting.IsExposed(actor, target), InOpening && actor.Side == Side.Heroes ? _openingCrit : 0);
@@ -447,10 +479,7 @@ namespace Game.Shared.Combat
             target.Hp -= lost;
             if (!target.IsDown) return lost;
 
-            var line = _lines[target.Side];
-            line.Remove(target);
-            target.Line = -1;
-            Reindex(line);
+            Remove(target);
 
             if (_lines[Side.Enemies].Count == 0) End(FightOutcome.Won, LossReason.None);
             else if (_lines[Side.Heroes].Count == 0 && _bench.Count == 0) End(FightOutcome.Lost, LossReason.HeroesDown);
@@ -494,9 +523,6 @@ namespace Game.Shared.Combat
         {
             var unit = new FightUnit(_units.Count, side, id, name, stats, skills, Db.Combat.Effects);
             _units.Add(unit);
-            var line = _lines[side];
-            line.Add(unit);
-            unit.Line = line.Count - 1;
             return unit;
         }
 
@@ -507,9 +533,38 @@ namespace Game.Shared.Combat
             _queue.Clear();
         }
 
-        private static void Reindex(List<FightUnit> line)
+        /// <summary>Takes a unit off the row; the rest close the gap toward the centre (CMB-14).</summary>
+        private void Remove(FightUnit unit)
         {
-            for (int i = 0; i < line.Count; i++) line[i].Line = i;
+            _row.Remove(unit);
+            unit.Pos = -1;
+            unit.Line = -1;
+            Reindex();
+        }
+
+        /// <summary>
+        /// Sets row positions, turns flankers Main once no foe stands between them and their side
+        /// (D-104), then rebuilds each side's line: Main Front first, then flankers.
+        /// </summary>
+        private void Reindex()
+        {
+            for (int i = 0; i < _row.Count; i++) _row[i].Pos = i;
+            foreach (var u in _row.Where(u => u.Spot != Spot.Main))
+            {
+                int p = u.Pos + (u.Side == Side.Heroes ? -1 : 1); // next unit toward its own side
+                if (p < 0 || p >= _row.Count || _row[p].Side == u.Side) u.Spot = Spot.Main;
+            }
+            foreach (var side in new[] { Side.Heroes, Side.Enemies })
+            {
+                var all = _row.Where(u => u.Side == side).ToList();
+                // Front = nearest the centre: heroes face right, so their Front is the rightmost.
+                if (side == Side.Heroes) all.Reverse();
+                var line = _lines[side];
+                line.Clear();
+                line.AddRange(all.Where(u => u.Spot == Spot.Main));
+                line.AddRange(all.Where(u => u.Spot != Spot.Main));
+                for (int i = 0; i < line.Count; i++) line[i].Line = i;
+            }
         }
 
         private static void CheckSize(int count, string what)

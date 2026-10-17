@@ -1,7 +1,7 @@
 # STATUS
 > Read every session. Keep under ~40 lines. Detailed history = git log.
 
-**Phase:** M2a Combat (single fight) · **Next:** M2b-T5 entry points (Margin/Gutter/Bleed-through) · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
+**Phase:** M2a Combat (single fight) · **Next:** M2b-T6 Notice meter + Rewrite · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
 
 ## Done (details: git log, `decisions.md`)
 - GDD for demo (universe, combat v2, enemies, story, demo scope, 4 champions, BAL-1..20); stack D-62..66; art D-68..70
@@ -27,17 +27,14 @@ Rules: CMB-3..10, 17..23, 33..36 · BAL-21..24 (D-91..94). Code in `shared/Stage
 - [x] T2 Stage sim: scenes in order, party pick per scene (CMB-3/8), HP carries, door heal, Down for stage, fail, Retreat, stars (CMB-33..36)
 - [x] T3 Join / Fall back (CMB-10), nearby arrivals (CMB-22), Herald reinforcements
 - [x] T4 Room options + Noise (CMB-7, CMB-19): Clash, Margin Strike, Strike Out, Between the Lines, Spin a Tale
-- [ ] T5 Entry points Margin / Gutter + Bleed-through (CMB-17/18); Exposed starts to trigger (CMB-15)
+- [x] T5 Entry points Margin / Gutter + Bleed-through (CMB-17/18); Exposed starts to trigger (CMB-15)
 - [ ] T6 Notice meter (CMB-23) + Rewrite (CMB-20)
 - [ ] T7 Unity: stage map + scene preview + deploy screens (placeholder)
 - [ ] T8 Unity: play the whole Seedbed; user play-check
 
 ## Last session
-- 2026-10-17: M2a done (T2..T8, one session): sim in `shared/Combat`, Unity *Game/Test Fight* with Seedbed 1–6 picker (D-88), user play-checked.
-- M2b-T0: D-91 door heal 15% (BAL-21), D-92 room option % (BAL-22), D-93 Margin Strike (BAL-23), D-94 Strike Out (BAL-24). D-89 Corrector may self-heal.
-- M2b-T1: `content/stages.json` (P1–P2, S1–S6, D-95) + `StageModels.cs` + loader checks; C3 Herald in `enemies.json` (Ring = SpecialType, no effect until T3). 150 tests green.
-- M2b-T2: `shared/Stages/StageRun` (scenes in order, party per scene, door heal, HP carry, Down for stage, Retreat, 3 stars); D-96 defaults. 160 tests.
-- M2b-T3: `Fight.Join` / `FallBack` (CMB-10), arrivals (CMB-22), Herald rings once (D-97), defaults D-98. 169 tests.
-- M2b-T4: `StageRun.Allowed/Chance/Enter(option)` (CMB-7 Noise, BAL-22..24), `Fight` opening phase (round 0); D-99. 187 tests.
-- Next: M2b-T5 entry points Margin/Gutter + Bleed-through, Exposed triggering (CMB-15/17/18).
+- 2026-10-17: M2a done; M2b-T0..T4 done (stages.json, StageRun, Join/arrivals/Herald, room options + opening; D-91..99). 187 tests.
+- M2b-T5: `Fight` is one row (`Row`, `FightUnit.Pos/Spot/Facing`); Margin/Gutter/Bleed-through (`HeroEntry/EnemyEntry.Spot`), melee both sides, Exposed live, flankers walk back; `StageRun.Enter(..., marginHero)`. D-100..105. 202 tests.
+- FightScreen still shows only 3 slots per side (a flanker shows in a hero slot); real row view comes with T7.
+- Next: M2b-T6 Notice meter (CMB-23) + Rewrite (CMB-20).
 - User: one question at a time, plain words, small demo, free maintained packages, state Claude usage cost before heavy tools.

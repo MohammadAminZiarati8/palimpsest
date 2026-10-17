@@ -7,6 +7,13 @@ namespace Game.Shared.Combat
 {
     public enum Side { Heroes, Enemies }
 
+    /// <summary>
+    /// CMB-17/18 where a unit stands. Main = own line (Main Door). Behind = behind the foe's Back
+    /// (Margin for heroes, Bleed-through for enemies), facing the foes. Gutter = right behind the foe's
+    /// Front, no safe side (D-103). A flanker turns Main once no foe stands between it and its side (D-104).
+    /// </summary>
+    public enum Spot { Main, Behind, Gutter }
+
     /// <summary>One status effect on a unit (CMB-40). Same type never stacks (BAL-15).</summary>
     public sealed class ActiveEffect
     {
@@ -48,8 +55,16 @@ namespace Game.Shared.Combat
         public int MaxHp { get; }
         public int Hp { get; internal set; }
         public bool IsDown => Hp <= 0;
-        /// <summary>CMB-11: 0 = Front (next to the centre), counting back. -1 once Down (slot freed, CMB-14).</summary>
+        /// <summary>
+        /// CMB-11: index in <see cref="Fight.Line"/>: 0 = Front (next to the centre), counting back; flankers
+        /// after the Main units. -1 once Down (slot freed, CMB-14).
+        /// </summary>
         public int Line { get; internal set; }
+        /// <summary>Index in the whole row, left (our Main Door end) to right; -1 when off the field.</summary>
+        public int Pos { get; internal set; } = -1;
+        public Spot Spot { get; internal set; }
+        /// <summary>+1 = faces right, −1 = left. Main heroes face right, Main enemies left; Behind turns round.</summary>
+        public int Facing => (Side == Side.Heroes ? 1 : -1) * (Spot == Spot.Behind ? -1 : 1);
         public IReadOnlyList<ActiveEffect> Effects => _effects;
         public int Level { get; internal set; } = 1;
         public int Rank { get; internal set; } = 1;

@@ -132,8 +132,11 @@ namespace Game.Shared.Stages
         /// <summary>
         /// Starts the current scene with a room option. Strike Out needs <paramref name="strikeTarget"/>
         /// (enemy index, non-Elite, BAL-24). Rolls use their own stream from the stage seed (A3).
+        /// <paramref name="marginHero"/>: one party champion entering by the Margin, behind the enemy Back
+        /// (CMB-17, D-101); needs the scene's Margin Path. The rest use the Main Door in the given order.
         /// </summary>
-        public SceneStart Enter(IReadOnlyList<string> partyFrontFirst, RoomOption option, int strikeTarget = -1)
+        public SceneStart Enter(IReadOnlyList<string> partyFrontFirst, RoomOption option, int strikeTarget = -1,
+            string? marginHero = null)
         {
             if (State != StageState.ChooseParty) throw new InvalidOperationException($"Can't enter while {State}");
             if (partyFrontFirst.Count < 1 || partyFrontFirst.Count > Scene.Capacity)
@@ -143,6 +146,8 @@ namespace Game.Shared.Stages
             var party = partyFrontFirst.Select(id => _team.FirstOrDefault(h => h.Id == id)
                 ?? throw new ArgumentException($"{id} is not in the team")).ToList();
             if (party.Any(h => h.IsDown)) throw new ArgumentException("Down champions can't enter (CMB-34)");
+            if (marginHero != null && (!Scene.MarginPath || !partyFrontFirst.Contains(marginHero)))
+                throw new ArgumentException($"{marginHero} can't take the Margin: needs a Margin Path and a party member (CMB-17)");
             if (!Allowed(partyFrontFirst).Contains(option))
                 throw new ArgumentException($"{option} isn't allowed here with {party.Count} champion(s) (CMB-7)");
             var enemies = Scene.Enemies.ToList();
@@ -184,7 +189,11 @@ namespace Game.Shared.Stages
                 Opening = opening,
                 OpeningEnemyIndex = openingIndex,
                 OpeningCritBonus = crit,
-                Heroes = party.Select(h => new HeroEntry { ChampionId = h.Id, Level = h.Level, Rank = h.Rank, Hp = h.Hp }).ToList(),
+                Heroes = party.Select(h => new HeroEntry
+                {
+                    ChampionId = h.Id, Level = h.Level, Rank = h.Rank, Hp = h.Hp,
+                    Spot = h.Id == marginHero ? Spot.Behind : Spot.Main,
+                }).ToList(),
                 Enemies = enemies.Select(id => new EnemyEntry { EnemyId = id, Level = Stage.EnemyLevel }).ToList(),
                 Bench = _team.Where(h => !h.IsDown && !party.Contains(h))
                     .Select(h => new HeroEntry { ChampionId = h.Id, Level = h.Level, Rank = h.Rank, Hp = h.Hp }).ToList(),

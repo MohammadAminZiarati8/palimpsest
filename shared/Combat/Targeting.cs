@@ -10,8 +10,8 @@ namespace Game.Shared.Combat
         public static Side Opposite(Side side) => side == Side.Heroes ? Side.Enemies : Side.Heroes;
 
         /// <summary>
-        /// Units the actor may pick. Melee: nearest enemy (CMB-12; in M2a that is the enemy Front,
-        /// flank sides arrive with Margin/Gutter in M2b). Ranged or Dive: any enemy on the field.
+        /// Units the actor may pick. Melee: the nearest enemy on each side of the actor in the row
+        /// (CMB-12: allies don't block, enemies do). Ranged or Dive: any enemy on the field.
         /// Single skills skip Faded units, and a Faded unit doesn't block melee (D-85).
         /// Reach None: Self = caster; Ally / AllAllies = any unit on the caster's side (caster included).
         /// </summary>
@@ -26,15 +26,23 @@ namespace Game.Shared.Combat
             IEnumerable<FightUnit> foes = fight.Line(Opposite(actor.Side));
             if (skill.Area == Area.Single) foes = foes.Where(u => !u.IsFaded);
             if (skill.Reach == Reach.Ranged || skill.Dive) return foes.ToList();
-            if (skill.Reach == Reach.Melee) return foes.Take(1).ToList();
-            return new List<FightUnit>();
+            if (skill.Reach != Reach.Melee) return new List<FightUnit>();
+            var list = foes.ToList();
+            var nearest = new List<FightUnit>();
+            var left = list.Where(u => u.Pos < actor.Pos).OrderByDescending(u => u.Pos).FirstOrDefault();
+            var right = list.Where(u => u.Pos > actor.Pos).OrderBy(u => u.Pos).FirstOrDefault();
+            if (left != null) nearest.Add(left);
+            if (right != null) nearest.Add(right);
+            return nearest;
         }
 
         /// <summary>
         /// Units hit when the skill lands on <paramref name="primary"/>. Single = target;
-        /// Splash = target + the enemy behind it, else the one in front (D-78, never allies); Row = all enemies.
+        /// Splash = target + the next unit behind it (far side from the attacker), else the next on the
+        /// near side, only if on the target's side (D-78, never allies); Row = all enemies.
+        /// Without an attacker, "behind" = behind the target's back.
         /// </summary>
-        public static IReadOnlyList<FightUnit> Hits(Fight fight, SkillDef skill, FightUnit primary)
+        public static IReadOnlyList<FightUnit> Hits(Fight fight, SkillDef skill, FightUnit primary, FightUnit? actor = null)
         {
             var line = fight.Line(primary.Side);
             switch (skill.Area)
@@ -42,9 +50,13 @@ namespace Game.Shared.Combat
                 case Area.Single:
                     return new[] { primary };
                 case Area.Splash:
-                    int behind = primary.Line + 1, front = primary.Line - 1;
-                    if (behind < line.Count) return new[] { primary, line[behind] };
-                    if (front >= 0) return new[] { primary, line[front] };
+                    int dir = actor != null && actor.Side != primary.Side
+                        ? (primary.Pos > actor.Pos ? 1 : -1)
+                        : -primary.Facing;
+                    var row = fight.Row;
+                    foreach (int p in new[] { primary.Pos + dir, primary.Pos - dir })
+                        if (p >= 0 && p < row.Count && row[p].Side == primary.Side)
+                            return new[] { primary, row[p] };
                     return new[] { primary };
                 case Area.Row:
                 case Area.AllAllies:
@@ -58,9 +70,14 @@ namespace Game.Shared.Combat
         }
 
         /// <summary>
-        /// CMB-15 Exposed = hit from the target's rear. Needs units behind a line
-        /// (Margin entry, Bleed-through, Gutter: CMB-17/18, M2b); in M2a nobody stands there.
+        /// CMB-15 Exposed = the attacker stands behind the target's back, melee and ranged alike (D-102).
+        /// A Gutter unit has no safe side: every enemy hit on it is Exposed (D-103).
         /// </summary>
-        public static bool IsExposed(FightUnit attacker, FightUnit target) => false;
+        public static bool IsExposed(FightUnit attacker, FightUnit target)
+        {
+            if (attacker.Side == target.Side || attacker.Pos < 0 || target.Pos < 0) return false;
+            if (target.Spot == Spot.Gutter) return true;
+            return (attacker.Pos > target.Pos ? 1 : -1) == -target.Facing;
+        }
     }
 }
