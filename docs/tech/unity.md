@@ -8,7 +8,7 @@
 - UI: uGUI + TextMeshPro (D-65). Characters: 2D Animation + PSD Importer (Unity official) for cut-out sprites (D-69, ART-6). Animation: PrimeTween. Async: UniTask. JSON: Newtonsoft (Unity package).
 - Login: Unity Authentication package. Net: HTTP+JSON via `UnityWebRequest` + UniTask; DTOs from `shared`.
 - Later: NuGetForUnity + SignalR client (live PvP).
-- `scripts/` copies the built `shared` DLL to `client/Assets/Plugins/Shared/` and `content/` to `client/Assets/_Game/Content/` (M0-6). Never edit those copies.
+- Every `dotnet build`/`dotnet test` copies the `shared` DLL to `client/Assets/Plugins/Shared/` and `content/**/*.json` to `client/Assets/_Game/Content/` (target `CopyToUnity` in `Game.Shared.csproj`, M0-6). Both are gitignored; never edit the copies. Load content by path, not by asset reference (metas differ per machine).
 
 ## Assemblies (A9)
 | asmdef | Layer | Holds |
@@ -33,4 +33,4 @@ client/Assets/_Game/
 - Placeholder art (colored shapes) until real art exists.
 
 ## Status
-M0-5: `client/` created, packages resolve, asmdefs compile, Android setup applied (batch: `unity run client -- -executeMethod Game.Editor.ProjectSetup.Apply`). No scenes/code yet. `Plugins/Shared` + `_Game/Content` copies come with M0-6.
+M0-5: `client/` created, packages resolve, asmdefs compile, Android setup applied (batch: `unity run client -- -executeMethod Game.Editor.ProjectSetup.Apply`). No scenes/code yet. M0-6: shared DLL + content copy verified (Unity compiles code using `Game.Shared`).

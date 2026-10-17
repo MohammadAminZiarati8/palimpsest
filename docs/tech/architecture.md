@@ -10,7 +10,7 @@
 /shared.Tests/      xUnit tests for shared — `dotnet test`, no Unity
 /server/            ASP.NET Core .NET 10 + PostgreSQL (Docker)
 /client/            Unity 6 project (2D URP, uGUI, Android)
-/scripts/           Local scripts: test, build-android, copy shared DLL + content (D-64)
+/scripts/           Local scripts (D-64): test, build-android (later). Shared DLL + content copy to Unity runs on every `dotnet build`
 ```
 
 ## Key principles

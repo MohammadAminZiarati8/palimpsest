@@ -9,4 +9,23 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
+  <!-- M0-6: every build copies the DLL and content/*.json into Unity (A1, A8). Never edit the copies. -->
+  <PropertyGroup>
+    <UnityAssets>$(MSBuildThisFileDirectory)..\client\Assets\</UnityAssets>
+    <ContentSrc>$(MSBuildThisFileDirectory)..\content\</ContentSrc>
+    <ContentDst>$(UnityAssets)_Game\Content\</ContentDst>
+  </PropertyGroup>
+
+  <Target Name="CopyToUnity" AfterTargets="Build" Condition="Exists('$(UnityAssets)')">
+    <ItemGroup>
+      <SharedOut Include="$(TargetDir)$(TargetName).dll;$(TargetDir)$(TargetName).pdb" />
+      <ContentJson Include="$(ContentSrc)**\*.json" />
+      <ContentCopy Include="@(ContentJson->'$(ContentDst)%(RecursiveDir)%(Filename)%(Extension)')" />
+      <ContentOld Include="$(ContentDst)**\*.json" Exclude="@(ContentCopy)" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SharedOut)" DestinationFolder="$(UnityAssets)Plugins\Shared" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(ContentJson)" DestinationFiles="@(ContentCopy)" SkipUnchangedFiles="true" />
+    <Delete Files="@(ContentOld)" />
+  </Target>
+
 </Project>
