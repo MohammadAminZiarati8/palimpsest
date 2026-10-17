@@ -63,6 +63,7 @@ namespace Game.Shared.Combat
         private readonly List<FightUnit> _units = new List<FightUnit>();
         private readonly Queue<FightUnit> _queue = new Queue<FightUnit>();
         private readonly ITurnOrder _order;
+        private readonly Dictionary<FightUnit, Intent> _intents = new Dictionary<FightUnit, Intent>();
         private int _turn;
         private long _sequence;
 
@@ -102,6 +103,9 @@ namespace Game.Shared.Combat
                 Add(Side.Enemies, def.Id, def.Name, EnemyStatCalculator.At(db, def, e.Level), def.Skills);
             }
         }
+
+        /// <summary>Enemy intent for this round (CMB-26, CMB-41), fixed at round start. Null = none.</summary>
+        public Intent? IntentOf(FightUnit unit) => _intents.TryGetValue(unit, out var i) ? i : null;
 
         /// <summary>Units on the field for a side, Front first.</summary>
         public IReadOnlyList<FightUnit> Line(Side side) => _lines[side];
@@ -305,6 +309,12 @@ namespace Game.Shared.Combat
             _queue.Clear();
             foreach (var u in _order.Build(_lines[Side.Heroes].Concat(_lines[Side.Enemies])))
                 _queue.Enqueue(u);
+            _intents.Clear();
+            foreach (var e in _lines[Side.Enemies])
+            {
+                var plan = EnemyAi.Plan(this, e);
+                if (plan != null) _intents[e] = plan;
+            }
         }
 
         private FightUnit? NextActor()

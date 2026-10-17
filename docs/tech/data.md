@@ -9,7 +9,7 @@ Loaded by `Game.Shared.Content.ContentLoader` (Newtonsoft, unknown fields = erro
 | `stats.json` | Stat tiers Low/Medium/High (BAL-5), rarity % (BAL-6), rank % + rank-up costs (BAL-9), levelsPerRank (CHM-7), maxRank (BAL-10), xpPerLevel (BAL-11), maxTweakPercent (BAL-7) | M1 |
 | `classes.json` | Per class: badge item, growth % per level (BAL-8), bonus per rank-up (BAL-9) | M1 |
 | `champions.json` | id, name, class, rarity, stat shape (tier per stat), tweakPercent | M1 |
-| `combat.json` | defenseK, spreadPercent (BAL-2), exposedCritPercent (BAL-20), critCapPercent, roundCap (CMB-43); `effects`: bleedAttackPercent, attack/defensePercent, speed, accuracy (CMB-40), wardRounds | M2a |
+| `combat.json` | defenseK, spreadPercent (BAL-2), exposedCritPercent (BAL-20), critCapPercent, roundCap (CMB-43), aiHealSelf (CMB-41, D-86); `effects`: bleedAttackPercent, attack/defensePercent, speed, accuracy (CMB-40), wardRounds | M2a |
 | `skills.json` | `kits[]`: champion id + `skills[]` S1..S3 (all required) | M2a |
 | `enemies.json` | tiers hp/atk/def/spd (BAL-16; 0/missing = undefined), growthPercent, eliteHp/AttackPercent (BAL-17), critChance/critDamage defaults (D-76); `enemies[]`: id, name, role, elite, slot Front/Back, shape (4 tiers), optional critChance/critDamage override, `skills[]` (S1 required) | M2a |
 
