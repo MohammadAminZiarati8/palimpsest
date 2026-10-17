@@ -1,7 +1,7 @@
 # STATUS
 > Read every session. Keep under ~40 lines. Detailed history = git log.
 
-**Phase:** M0 setup (GDD for demo done) · **Next:** M0-1 push (user creates GitHub remote) → M0-2
+**Phase:** M0 setup (GDD for demo done) · **Next:** M0-2
 
 ## GDD tasks (Claude drafts, user approves — D-08)
 - [x] Universe (D-07, D-09) · Combat v2 (D-10, D-11) · Business & platform (D-12, D-13)
@@ -20,7 +20,7 @@
 Campaign rewards/stars Q-05, Q-06 · Dungeons Q-14 · Gear Q-11, Q-12 · Awakening Q-09, Q-10 · Refund Q-08 · Meta Q-22 · Languages Q-21 · Production Q-23 · Title Q-24
 
 ## M0 tasks (after GDD)
-- [~] M0-1 Init git repo, `.gitignore` (Unity + .NET) done; push to GitHub waits for user's remote URL
+- [x] M0-1 Git repo + `.gitignore`/`.gitattributes`, pushed to github.com/MohammadAminZiarati8/palimpsest (private)
 - [ ] M0-2 `.claude/settings.json`: deny reads of Library/Temp/Logs/obj/bin
 - [ ] M0-3 `shared/` netstandard2.1 lib + `shared.Tests/`; `dotnet test` green
 - [ ] M0-4 `server/` skeleton per `tech/backend.md`
@@ -32,4 +32,4 @@ Campaign rewards/stars Q-05, Q-06 · Dungeons Q-14 · Gear Q-11, Q-12 · Awakeni
 - 2026-10-17: Q-04 → uGUI (D-65). Architecture A1–A11 approved (D-66): added safe retries, ledger, content version, client layers, stateless server, modules.
 - M0-7 done: `tech/architecture.md`, `backend.md`, `unity.md` now Decided.
 - User rule: free, actively maintained, community-recommended packages; no cloud CI (local scripts).
-- User prefers questions one at a time, plain words, small demo scope. Git initialised (M0-1); push pending remote.
+- User prefers questions one at a time, plain words, small demo scope. Repo on GitHub (M0-1); commit identity set per-repo (MohammadAminZiarati8).
