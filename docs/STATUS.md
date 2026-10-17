@@ -1,7 +1,7 @@
 # STATUS
 > Read every session. Keep under ~40 lines. Detailed history = git log.
 
-**Phase:** M2a Combat (single fight) · **Next:** user OKs M2b task split, then M2b-T0 · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
+**Phase:** M2a Combat (single fight) · **Next:** M2b-T0 (asking Q7/Q8) · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
 
 ## Done (details: git log, `decisions.md`)
 - GDD for demo (universe, combat v2, enemies, story, demo scope, 4 champions, BAL-1..20); stack D-62..66; art D-68..70
@@ -20,7 +20,7 @@ Rules: CMB-12..15, 25..27, 29, 31, 40..43 · BAL-2..4, 15..18, 20. Code in `shar
 - [x] T7 Unity fight screen, placeholder boxes, plays the sim (Unity MCP: ask cost first)
 - [x] T8 Unity feedback (damage numbers, PrimeTween), win/lose, Seedbed 1–6 test-fight picker; user play-check
 
-## M2b — stage flow (task split Proposed, needs user OK)
+## M2b — stage flow (task split approved, D-90)
 Rules: CMB-3..10, 17..23, 33..36 · Q7/Q8 answers. Code in `shared/Stages`, tests in `shared.Tests`.
 - [ ] T0 Docs: ask Q7 (room option %, door heal) + Q8 (Margin Strike, Strike Out numbers), one at a time
 - [ ] T1 Content: `stages.json` (Prologue 1–2, Seedbed 1–6: scenes, capacity, enemies, nearby arrivals, Herald) + loader checks
