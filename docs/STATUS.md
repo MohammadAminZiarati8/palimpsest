@@ -1,7 +1,7 @@
 # STATUS
 > Read every session. Keep under ~40 lines. Detailed history = git log.
 
-**Phase:** M2a Combat (single fight) · **Next:** user play-check of T8 (Game/Test Fight), then M2b planning · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
+**Phase:** M2a Combat (single fight) · **Next:** M2b planning (M2a done) · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
 
 ## Done (details: git log, `decisions.md`)
 - GDD for demo (universe, combat v2, enemies, story, demo scope, 4 champions, BAL-1..20); stack D-62..66; art D-68..70
