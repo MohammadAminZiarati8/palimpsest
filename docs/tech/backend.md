@@ -20,5 +20,10 @@
 - Player state tables: players, champions, gear, inventory (item_id, qty), currencies, campaign_progress, ledger, requests.
 - Content: server loads `content/*.json` at startup; content version checked at login (A8).
 
+## Run locally
+- `docker compose up -d db` → `dotnet run --project server` (dev DB creds in `docker-compose.yml`, dev only).
+- Or `docker compose up -d --build` → `http://localhost:8080/health`. Dev API docs: `/scalar`, `/openapi/v1.json`.
+- `dotnet test` from repo root; DB tests skip when Docker is not running.
+
 ## Status
-Not started (M0-4). Record API in `api.md`, schema in `data.md` as built.
+M0-4 skeleton: `server/` (Game.Server: Serilog, EF Core/Npgsql, `/health` with DB check, OpenAPI + Scalar dev), `server.Tests/` (xUnit v3, WebApplicationFactory, Testcontainers). No tables, auth or modules yet (M3). Record API in `api.md`, schema in `data.md` as built.

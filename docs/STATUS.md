@@ -1,7 +1,7 @@
 # STATUS
 > Read every session. Keep under ~40 lines. Detailed history = git log.
 
-**Phase:** M0 setup (GDD for demo done) · **Next:** M0-4 server skeleton (needs Docker Desktop) · art: first hero parts-sheet test (ART-7)
+**Phase:** M0 setup (GDD for demo done) · **Next:** M0-5 Unity project · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
 
 ## GDD tasks (Claude drafts, user approves — D-08)
 - [x] Universe (D-07, D-09) · Combat v2 (D-10, D-11) · Business & platform (D-12, D-13)
@@ -23,7 +23,7 @@ Campaign rewards/stars Q-05, Q-06 · Dungeons Q-14 · Gear Q-11, Q-12 · Awakeni
 - [x] M0-1 Git repo + `.gitignore`/`.gitattributes`, pushed to github.com/MohammadAminZiarati8/palimpsest (private)
 - [x] M0-2 `.claude/settings.json`: deny reads of Library/Temp/Logs/obj/bin (+ builds, `game-design-decisions.md`)
 - [x] M0-3 `shared/` (Game.Shared, netstandard2.1, C# 9) + `shared.Tests/` (xUnit v3, MTP runner via `global.json`); `dotnet test` green
-- [ ] M0-4 `server/` skeleton per `tech/backend.md`
+- [x] M0-4 `server/` skeleton per `tech/backend.md` (DB health test skips until Docker Desktop installed)
 - [ ] M0-5 `client/` Unity project (Android, landscape, uGUI); asmdefs + folders per `tech/unity.md`
 - [ ] M0-6 `scripts/`: copy `shared` DLL + `content/` into Unity (see `tech/unity.md`)
 - [x] M0-7 Update `tech/*.md` from Proposed → Decided for chosen stack
