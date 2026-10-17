@@ -74,3 +74,4 @@
 | 2026-10-17 | D-69 | Characters = 2D cut-out sprites animated with bones (Unity 2D Animation + PSD Importer), not 3D models, not frame-by-frame. D-64 2D URP unchanged (ART-6) | User approval |
 | 2026-10-17 | D-70 | Demo art pipeline: Claude + Gemini + ChatGPT Plus (hero picture → parts sheet → Claude crops, rigs, animates in Unity); no hired artist for the demo (ART-7, DEMO-12). Launch art/audio still Q-23 | User approval |
 | 2026-10-17 | D-71 | Unity 6.3 LTS `6000.3.23f1` (installed, has Android SDK/NDK); UniTask/PrimeTween via OpenUPM; placeholder app id `com.ziarati.palimpsest` until Q-24. Implementation choice in M0-5 | Claude (user may change) |
+| 2026-10-17 | D-72 | M1 tech: shared uses Newtonsoft 13.0.2 (same as Unity pkg); content copied to Unity `Resources/Content`; stat math in decimal, one round half-away-from-zero per stat (matches BAL table) | Claude (user may change) |

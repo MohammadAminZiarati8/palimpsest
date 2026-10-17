@@ -1,0 +1,22 @@
+{
+  "_doc": "Demo champions (docs/gdd/champions/c01..c04). Shape = stat tier per stat (BAL-5); tweakPercent = per-hero tweak, max +-10 (BAL-7).",
+  "champions": [
+    {
+      "id": "c01", "name": "Margo", "class": "Warrior", "rarity": "Epic",
+      "shape": { "hp": "High", "attack": "High", "defense": "Medium", "speed": "Medium", "critChance": "Low", "critDamage": "Medium", "accuracy": "Medium" }
+    },
+    {
+      "id": "c02", "name": "Pell", "class": "Assassin", "rarity": "Rare",
+      "shape": { "hp": "Low", "attack": "High", "defense": "Low", "speed": "High", "critChance": "High", "critDamage": "High", "accuracy": "Medium" }
+    },
+    {
+      "id": "c03", "name": "Libby", "class": "Mage", "rarity": "Rare",
+      "shape": { "hp": "Low", "attack": "High", "defense": "Low", "speed": "High", "critChance": "Medium", "critDamage": "Medium", "accuracy": "Medium" }
+    },
+    {
+      "id": "c04", "name": "Lady White Snake", "class": "Support", "rarity": "Epic",
+      "shape": { "hp": "High", "attack": "Low", "defense": "Medium", "speed": "High", "critChance": "Low", "critDamage": "Low", "accuracy": "Medium" },
+      "tweakPercent": { "hp": 5 }
+    }
+  ]
+}

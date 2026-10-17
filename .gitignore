@@ -11,8 +11,8 @@
 /client/Assets/Plugins/Editor/JetBrains*
 /client/Assets/Plugins/Shared/
 /client/Assets/Plugins/Shared.meta
-/client/Assets/_Game/Content/
-/client/Assets/_Game/Content.meta
+/client/Assets/_Game/Resources/Content/
+/client/Assets/_Game/Resources/Content.meta
 /client/Assets/StreamingAssets/aa/
 /client/*.csproj
 /client/*.sln

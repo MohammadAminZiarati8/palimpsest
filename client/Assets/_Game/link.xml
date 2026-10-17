@@ -1,0 +1,4 @@
+<!-- IL2CPP: keep content models used by Newtonsoft reflection. -->
+<linker>
+  <assembly fullname="Game.Shared" preserve="all" />
+</linker>

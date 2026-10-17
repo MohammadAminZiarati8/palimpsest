@@ -1,0 +1,9 @@
+{
+  "_doc": "Class growth per level (% of Lv1, BAL-8) and bonus per rank-up (BAL-9). Demo classes only. PLACEHOLDER.",
+  "classes": [
+    { "id": "Warrior",  "badge": "badge_warrior",  "growthPercent": { "hp": 9,  "attack": 9,  "defense": 7 }, "rankBonus": { "critDamage": 5 } },
+    { "id": "Assassin", "badge": "badge_assassin", "growthPercent": { "hp": 6,  "attack": 10, "defense": 6 }, "rankBonus": { "critChance": 2 } },
+    { "id": "Mage",     "badge": "badge_mage",     "growthPercent": { "hp": 6,  "attack": 10, "defense": 6 }, "rankBonus": { "speed": 2 } },
+    { "id": "Support",  "badge": "badge_support",  "growthPercent": { "hp": 10, "attack": 6,  "defense": 8 }, "rankBonus": { "speed": 2 } }
+  ]
+}

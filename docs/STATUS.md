@@ -1,7 +1,7 @@
 # STATUS
 > Read every session. Keep under ~40 lines. Detailed history = git log.
 
-**Phase:** M0 done → M1 Shared core · **Next:** M1 (content models + JSON loaders, stat calc) · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
+**Phase:** M1 done → M2 Combat · **Next:** M2 (combat spec check, deterministic sim in `shared`) · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
 
 ## GDD tasks (Claude drafts, user approves — D-08)
 - [x] Universe (D-07, D-09) · Combat v2 (D-10, D-11) · Business & platform (D-12, D-13)
@@ -27,6 +27,9 @@ Campaign rewards/stars Q-05, Q-06 · Dungeons Q-14 · Gear Q-11, Q-12 · Awakeni
 - [x] M0-5 `client/` Unity 6.3 LTS project (Android, landscape, IL2CPP ARM64, uGUI); asmdefs + folders per `tech/unity.md`
 - [x] M0-6 `dotnet build` copies `shared` DLL + `content/` into Unity (see `tech/unity.md`)
 - [x] M0-7 Update `tech/*.md` from Proposed → Decided for chosen stack
+
+## M1 (done)
+- [x] Content JSON (`version`, `stats`, `classes`, `champions`) + loader with validation; stat calc (BAL-5..9) + level/XP caps (CHM-7, BAL-10/11); 39 shared tests; Unity loads content via Resources
 
 ## Last session
 - 2026-10-17: Q-04 → uGUI (D-65). Architecture A1–A11 approved (D-66): added safe retries, ledger, content version, client layers, stateless server, modules.

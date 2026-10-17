@@ -9,12 +9,16 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
-  <!-- M0-6: every build copies the DLL and content/*.json into Unity (A1, A8). Never edit the copies. -->
+  <!-- M0-6: every build copies the DLL and content/*.json into Unity (A1, A8). Never edit the copies.
+       Only Game.Shared.dll is copied: Unity supplies Newtonsoft itself (com.unity.nuget.newtonsoft-json = 13.0.2). -->
   <PropertyGroup>
     <UnityAssets>$(MSBuildThisFileDirectory)..\client\Assets\</UnityAssets>
     <ContentSrc>$(MSBuildThisFileDirectory)..\content\</ContentSrc>
-    <ContentDst>$(UnityAssets)_Game\Content\</ContentDst>
+    <ContentDst>$(UnityAssets)_Game\Resources\Content\</ContentDst>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+  </ItemGroup>
 
   <Target Name="CopyToUnity" AfterTargets="Build" Condition="Exists('$(UnityAssets)')">
     <ItemGroup>

@@ -8,7 +8,7 @@
 - UI: uGUI + TextMeshPro (D-65). Characters: 2D Animation + PSD Importer (Unity official) for cut-out sprites (D-69, ART-6). Animation: PrimeTween. Async: UniTask. JSON: Newtonsoft (Unity package).
 - Login: Unity Authentication package. Net: HTTP+JSON via `UnityWebRequest` + UniTask; DTOs from `shared`.
 - Later: NuGetForUnity + SignalR client (live PvP).
-- Every `dotnet build`/`dotnet test` copies the `shared` DLL to `client/Assets/Plugins/Shared/` and `content/**/*.json` to `client/Assets/_Game/Content/` (target `CopyToUnity` in `Game.Shared.csproj`, M0-6). Both are gitignored; never edit the copies. Load content by path, not by asset reference (metas differ per machine).
+- Every `dotnet build`/`dotnet test` copies the `shared` DLL to `client/Assets/Plugins/Shared/` and `content/**/*.json` to `client/Assets/_Game/Resources/Content/` (read at runtime by `Game.Core.ResourcesContentSource`; check with menu *Game/Check Content*) (target `CopyToUnity` in `Game.Shared.csproj`, M0-6). Both are gitignored; never edit the copies. Load content by path, not by asset reference (metas differ per machine).
 
 ## Assemblies (A9)
 | asmdef | Layer | Holds |
@@ -24,7 +24,7 @@
 ```
 client/Assets/_Game/
   Scripts/{Core,Net,Screens,Views,Combat,Editor}/
-  Content/   Scenes/   Prefabs/   Art/   Audio/   UI/
+  Resources/Content/ (generated)   Scenes/   Prefabs/   Art/   Audio/   UI/   link.xml (keeps Game.Shared for IL2CPP)
 ```
 
 ## Rules for Claude

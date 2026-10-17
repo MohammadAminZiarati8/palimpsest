@@ -1,0 +1,22 @@
+{
+  "_doc": "Stat rules. PLACEHOLDER numbers from docs/gdd/balancing.md (BAL-5, 6, 9, 10, 11). Percent values are whole percents.",
+  "tiers": {
+    "hp":         { "low": 800, "medium": 1000, "high": 1300 },
+    "attack":     { "low": 80,  "medium": 100,  "high": 125 },
+    "defense":    { "low": 35,  "medium": 50,   "high": 70 },
+    "speed":      { "low": 94,  "medium": 100,  "high": 108 },
+    "critChance": { "low": 5,   "medium": 10,   "high": 20 },
+    "critDamage": { "low": 40,  "medium": 50,   "high": 70 },
+    "accuracy":   { "low": 0,   "medium": 10,   "high": 20 }
+  },
+  "rarityPercent": { "Common": 85, "Rare": 100, "Epic": 115, "Legendary": 130 },
+  "rankStatPercent": 110,
+  "levelsPerRank": 10,
+  "maxRank": 2,
+  "xpPerLevel": 100,
+  "maxTweakPercent": 10,
+  "rankUps": [
+    { "toRank": 2, "badges": 5, "gold": 1000 },
+    { "toRank": 3, "badges": 10, "gold": 5000 }
+  ]
+}
