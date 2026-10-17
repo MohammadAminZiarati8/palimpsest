@@ -104,6 +104,7 @@
 ## Demo — stage flow (M2b)
 - **BAL-21** Door recovery (CMB-9): each scene a hero waits at the door heals 15% of its max HP (D-91, config).
 - **BAL-22** Room option % (CMB-19): 50% + 5% per level the hero is above the scene level (−5% per level below; party options use the party's average level). Assassin +15% on Strike Out / Between the Lines, Support +15% on Spin a Tale. Clamp 5–95%. Rank and stars don't count in the demo (D-92, config).
+- **BAL-23** Margin Strike (CMB-18 room options): every hero in the scene gets one free action before round 1, in Speed order; enemies don't act. Those actions get +50% crit chance (additive, cap 100%). Cooldowns as normal (D-93, config).
 
 ## Demo — not reviewed yet (Proposed, config values)
 
