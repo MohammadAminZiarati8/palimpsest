@@ -37,7 +37,7 @@ namespace Game.Shared.Combat
             bool crit = rng.RollPercent(chance);
             int range = rules.SpreadPercent * SpreadSteps;
             int spread = rng.NextInt(-range, range + 1);
-            int amount = Compute(rules, attacker.Stats.Attack, skill.DamagePercent, target.Stats.Defense,
+            int amount = Compute(rules, attacker.Attack, skill.DamagePercent, target.Defense,
                 crit, attacker.Stats.CritDamage, spread);
             return (amount, crit);
         }

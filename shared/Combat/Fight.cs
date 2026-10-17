@@ -38,6 +38,8 @@ namespace Game.Shared.Combat
         public FightUnit Target { get; }
         public int Amount { get; }
         public bool Crit { get; }
+        /// <summary>HP actually lost after Ward (Amount − absorbed, capped by HP left).</summary>
+        public int HpLost { get; internal set; }
         public Hit(FightUnit target, int amount, bool crit) { Target = target; Amount = amount; Crit = crit; }
     }
 
@@ -61,11 +63,15 @@ namespace Game.Shared.Combat
         private readonly List<FightUnit> _units = new List<FightUnit>();
         private readonly Queue<FightUnit> _queue = new Queue<FightUnit>();
         private readonly ITurnOrder _order;
+        private int _turn;
+        private long _sequence;
 
         public ContentDb Db { get; }
         /// <summary>The only RNG the fight may use (A3).</summary>
         public SeededRandom Random { get; }
         public int RoundCap { get; }
+        /// <summary>Turns started so far, across rounds (Stun-skipped turns count).</summary>
+        public int Turn => _turn;
         /// <summary>0 before the first round starts.</summary>
         public int Round { get; private set; }
         public FightOutcome Outcome { get; private set; }
@@ -114,8 +120,22 @@ namespace Game.Shared.Combat
                 if (Round >= RoundCap) { End(FightOutcome.Lost, LossReason.RoundCap); return false; }
                 StartRound();
             }
-            act(this, actor);
+            TakeTurn(actor, act);
             return !IsOver;
+        }
+
+        /// <summary>
+        /// One unit's turn: Bleed ticks first (Ward absorbs, CMB-43), Stun skips the action (CMB-40),
+        /// then cooldowns and durations tick at the end of the turn (CMB-42, BAL-15).
+        /// </summary>
+        private void TakeTurn(FightUnit actor, ActHook act)
+        {
+            _turn++;
+            var bleed = actor.Effect(StatusEffect.Bleed);
+            if (bleed != null) Damage(actor, bleed.Amount);
+            if (IsOver || actor.IsDown) return;
+            if (!actor.Has(StatusEffect.Stun)) act(this, actor);
+            if (!IsOver && !actor.IsDown) actor.EndTurn(_turn);
         }
 
         /// <summary>Plays turns until win or loss.</summary>
@@ -127,12 +147,13 @@ namespace Game.Shared.Combat
 
         /// <summary>
         /// Uses a damaging skill on <paramref name="primary"/> (must be in <see cref="Targeting.Valid"/>).
-        /// Each unit hit rolls its own crit and spread (BAL-2), in hit order. Cooldowns/effects: T4.
+        /// Each unit hit rolls its own crit and spread (BAL-2), in hit order. Then skill effects land on the units hit (or Self) and the cooldown starts (CMB-42).
         /// </summary>
         public IReadOnlyList<Hit> Attack(FightUnit actor, SkillDef skill, FightUnit primary)
         {
             if (IsOver) throw new InvalidOperationException("Fight is over");
             if (actor.IsDown) throw new InvalidOperationException($"{actor} is Down");
+            if (!actor.CanUse(skill)) throw new InvalidOperationException($"{skill.Name} is on cooldown or Sealed");
             if (!Targeting.Valid(this, actor, skill).Contains(primary))
                 throw new ArgumentException($"{primary} is not a valid target for {skill.Name}");
 
@@ -144,20 +165,67 @@ namespace Game.Shared.Combat
                 hits.Add(new Hit(target, amount, crit));
             }
             // Apply after all rolls so a Down primary doesn't shift who Splash hits.
-            foreach (var h in hits) Damage(h.Target, h.Amount);
+            foreach (var h in hits) h.HpLost = Damage(h.Target, h.Amount);
+            if (!IsOver)
+            {
+                foreach (var fx in skill.Effects)
+                    foreach (var u in fx.On == EffectOn.Self ? new[] { actor } : hits.Select(h => h.Target))
+                        if (!u.IsDown) ApplyEffect(u, fx.Type, fx.Rounds, actor);
+            }
+            actor.StartCooldown(skill);
             return hits;
+        }
+
+        /// <summary>
+        /// Puts a CMB-40 effect on <paramref name="target"/> (BAL-15: same type refreshes).
+        /// Bleed size = source Attack × bleedAttackPercent, fixed at apply time. Ward needs <paramref name="amount"/>.
+        /// </summary>
+        public ActiveEffect ApplyEffect(FightUnit target, StatusEffect type, int rounds, FightUnit source,
+            int amount = 0, SkillSlot sealedSlot = SkillSlot.Unset)
+        {
+            if (target.IsDown) throw new InvalidOperationException($"{target} is Down");
+            if (rounds < 1) throw new ArgumentOutOfRangeException(nameof(rounds));
+            if (type == StatusEffect.Bleed)
+                amount = Math.Max(1, (int)Math.Round(source.Attack * Db.Combat.Effects.BleedAttackPercent / 100m,
+                    MidpointRounding.AwayFromZero));
+            if (type == StatusEffect.Seal && sealedSlot != SkillSlot.S2 && sealedSlot != SkillSlot.S3)
+                throw new ArgumentException("Seal locks S2 or S3", nameof(sealedSlot));
+            return target.Apply(type, rounds, amount, sealedSlot, _turn, ++_sequence);
+        }
+
+        /// <summary>Removes up to <paramref name="count"/> debuffs, newest first (CMB-43). Returns how many.</summary>
+        public int Cleanse(FightUnit target, int count)
+        {
+            int removed = 0;
+            for (; removed < count; removed++)
+            {
+                var e = target.NewestDebuff();
+                if (e == null) break;
+                target.Remove(e);
+            }
+            return removed;
         }
 
         /// <summary>
         /// Removes HP (used by <see cref="Attack"/>, later Bleed). At 0 the unit is Down: its slot empties and
         /// the units behind it close the gap toward the centre (CMB-14, CMB-43).
         /// </summary>
-        public void Damage(FightUnit target, int amount)
+        /// <returns>HP actually lost.</returns>
+        public int Damage(FightUnit target, int amount)
         {
             if (amount < 0) throw new ArgumentOutOfRangeException(nameof(amount));
-            if (target.IsDown || IsOver) return;
-            target.Hp = Math.Max(0, target.Hp - amount);
-            if (!target.IsDown) return;
+            if (target.IsDown || IsOver) return 0;
+            var ward = target.Effect(StatusEffect.Ward);
+            if (ward != null)
+            {
+                int absorbed = Math.Min(ward.Amount, amount);
+                ward.Amount -= absorbed;
+                amount -= absorbed;
+                if (ward.Amount == 0) target.Remove(ward); // broken (balancing.md Ward)
+            }
+            int lost = Math.Min(target.Hp, amount);
+            target.Hp -= lost;
+            if (!target.IsDown) return lost;
 
             var line = _lines[target.Side];
             line.Remove(target);
@@ -166,6 +234,7 @@ namespace Game.Shared.Combat
 
             if (_lines[Side.Enemies].Count == 0) End(FightOutcome.Won, LossReason.None);
             else if (_lines[Side.Heroes].Count == 0) End(FightOutcome.Lost, LossReason.HeroesDown);
+            return lost;
         }
 
         private void StartRound()
@@ -188,7 +257,7 @@ namespace Game.Shared.Combat
 
         private void Add(Side side, string id, string name, StatSet<int> stats, IReadOnlyList<SkillDef> skills)
         {
-            var unit = new FightUnit(_units.Count, side, id, name, stats, skills);
+            var unit = new FightUnit(_units.Count, side, id, name, stats, skills, Db.Combat.Effects);
             _units.Add(unit);
             var line = _lines[side];
             line.Add(unit);
