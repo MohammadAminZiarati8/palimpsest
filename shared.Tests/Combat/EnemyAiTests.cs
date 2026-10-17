@@ -84,13 +84,14 @@ public class EnemyAiTests
     }
 
     [Fact]
-    public void Corrector_DoesNotHealItself_ByDefault_D86()
+    public void Corrector_HealsItself_D89()
     {
-        Assert.False(TestContent.Db.Combat.AiHealSelf);
+        Assert.True(TestContent.Db.Combat.AiHealSelf);
         var f = NewFight(["c01"], ["C4"]);
         var corrector = Enemy(f, "C4");
         f.Damage(corrector, corrector.MaxHp / 2);
-        Assert.Equal(SkillSlot.S1, EnemyAi.Plan(f, corrector)!.Skill.Slot);
+        var plan = EnemyAi.Plan(f, corrector)!;
+        Assert.Equal((SkillSlot.S2, corrector), (plan.Skill.Slot, plan.Target));
     }
 
     [Fact]

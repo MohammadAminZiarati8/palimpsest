@@ -14,7 +14,7 @@ namespace Game.Shared.Content
         public int ExposedCritPercent { get; set; }
         public int CritCapPercent { get; set; }
         public int RoundCap { get; set; }
-        /// <summary>CMB-41: may an enemy healer pick itself? Open (D-86), default false.</summary>
+        /// <summary>CMB-41: an enemy healer may pick itself (D-89: yes).</summary>
         public bool AiHealSelf { get; set; }
         public EffectStrengths Effects { get; set; } = new EffectStrengths();
     }

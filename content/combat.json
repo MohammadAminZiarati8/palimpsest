@@ -5,7 +5,7 @@
   "exposedCritPercent": 25,
   "critCapPercent": 100,
   "roundCap": 50,
-  "aiHealSelf": false,
+  "aiHealSelf": true,
   "effects": {
     "bleedAttackPercent": 30,
     "attackPercent": 25,

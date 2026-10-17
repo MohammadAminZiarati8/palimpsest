@@ -24,6 +24,6 @@ Rules: CMB-12..15, 25..27, 29, 31, 40..43 · BAL-2..4, 15..18, 20. Code in `shar
 ## Last session
 - 2026-10-17: M2a T2..T8 done (one session). Sim in `shared/Combat` (136 tests); Unity `Game.Combat.FightScreen` via menu *Game/Test Fight* (user play-checked T7 OK).
 - T8: Seedbed 1–6 test-fight picker (`TestFights.cs`, lineups Proposed D-88), floating damage/heal numbers (PrimeTween), win/lose panel (retry / next seed / pick).
-- Open for user: approve D-88 test lineups; Q-27 Corrector self-heal (now off). D-82..87 Claude defaults. T8 play-checked OK by user.
+- Open for user: approve D-88 test lineups; Q-27 answered (D-89, Corrector may self-heal). D-82..87 Claude defaults. T8 play-checked OK by user.
 - Next: M2b (stage flow) planning from `plan/roadmap.md`.
 - User: one question at a time, plain words, small demo, free maintained packages, state Claude usage cost before heavy tools.

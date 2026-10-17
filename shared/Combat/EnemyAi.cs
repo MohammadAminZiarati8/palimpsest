@@ -76,7 +76,7 @@ namespace Game.Shared.Combat
 
         /// <summary>
         /// Allies a heal may pick: under the AI threshold (if any). The caster only if
-        /// combat.json aiHealSelf (Open, D-86).
+        /// combat.json aiHealSelf (D-89: true).
         /// </summary>
         private static IEnumerable<FightUnit> HealCandidates(Fight fight, FightUnit unit, SkillDef skill)
         {
