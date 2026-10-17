@@ -2,7 +2,7 @@
 namespace Game.Combat
 {
     /// <summary>
-    /// M2a-T8 test fights for the picker. Proposed (D-88), not stage content: real Seedbed stages
+    /// M2a-T8 test fights for the picker. Decided (D-88), test only, not stage content: real Seedbed stages
     /// (scenes, doors, Herald) come with stages.json in M2b. Enemy level = BAL-19, heroes one below;
     /// rank 2 from stage 4 (BAL-13 rank up after Seedbed 3). Enemy lists are Front first.
     /// </summary>
