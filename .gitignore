@@ -1,0 +1,52 @@
+# --- Unity (client/) ---
+/client/[Ll]ibrary/
+/client/[Tt]emp/
+/client/[Oo]bj/
+/client/[Bb]uild/
+/client/[Bb]uilds/
+/client/[Ll]ogs/
+/client/[Uu]ser[Ss]ettings/
+/client/[Mm]emoryCaptures/
+/client/[Rr]ecordings/
+/client/Assets/Plugins/Editor/JetBrains*
+/client/Assets/Plugins/Shared/
+/client/Assets/Plugins/Shared.meta
+/client/Assets/_Game/Content/
+/client/Assets/_Game/Content.meta
+/client/Assets/StreamingAssets/aa/
+/client/*.csproj
+/client/*.sln
+/client/*.slnx
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+sysinfo.txt
+crashlytics-build.properties
+*.apk
+*.aab
+*.unitypackage
+
+# --- .NET (shared/, server/) ---
+[Bb]in/
+[Oo]bj/
+TestResults/
+*.user
+*.suo
+*.rsuser
+appsettings.*.local.json
+
+# --- Secrets ---
+.env
+.env.*
+!.env.example
+*.keystore
+*.jks
+
+# --- IDE / OS ---
+.vs/
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini

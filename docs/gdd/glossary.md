@@ -1,0 +1,20 @@
+# Glossary
+- **Rarity:** fixed quality tier of a champion or item.
+- **Rank:** upgrade step that raises max level. Champions: class materials. Gear: merging duplicates.
+- **Awakening / Stars:** champion upgrade from Soul Stones, max 5.
+- **Soul Stone:** item from a duplicate champion; awakens that champion.
+- **Universal Soul Stone:** rare Soul Stone usable on any champion of matching rarity.
+- **Awakened skill:** skill with extra bonus at ⭐3 and ⭐5 (one skill each).
+- **Upgrade Stone:** material for leveling gear.
+- **Forge Stone:** rare material replacing a duplicate when merging gear.
+- **Merge:** combining two copies of the same gear item to raise its rank.
+- **Content data:** static game definitions (champions, skills, gear, stages) in `content/`.
+- **Player data:** per-player state stored by the backend.
+- **Scene:** a room in a stage; 1–3 champions enter, the rest wait at the door.
+- **Reading / Watching:** enemy is unaware / alert. Reading enemies allow **Margin Strike**.
+- **Strike Out / Between the Lines / Spin a Tale:** Assassin silent kill / sneak past / Support enthrall.
+- **Herald, Bleed-through, Redaction, Blot, Lost Page, Margin Path:** room obstacles (see CMB obstacles table).
+- **Rewrite:** optional Scribe power, 1 charge per stage (CMB-20).
+- **Noise:** party size limits room options (CMB-7). **Notice:** stage-wide alert meter (CMB-23).
+- **Main Door / Margin / Gutter:** entry points — normal / behind enemies / between enemy lines (CMB-17).
+- **Exposed:** hit from the rear, bonus crit against (CMB-15).
