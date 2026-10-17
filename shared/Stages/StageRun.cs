@@ -10,6 +10,19 @@ namespace Game.Shared.Stages
 {
     public enum StageState { ChooseParty, Fighting, Cleared, Failed, Retreated }
 
+    /// <summary>Room options (02-combat.md room table).</summary>
+    public enum RoomOption { Clash, MarginStrike, StrikeOut, BetweenTheLines, SpinATale }
+
+    /// <summary>How a scene began: the option, its roll, and the fight (null = scene passed without one).</summary>
+    public sealed class SceneStart
+    {
+        public RoomOption Option { get; internal set; }
+        /// <summary>Shown % (100 for options without a roll).</summary>
+        public int Chance { get; internal set; } = 100;
+        public bool Success { get; internal set; } = true;
+        public Fight? Fight { get; internal set; }
+    }
+
     /// <summary>One champion's state across the stage's scenes (CMB-33/34).</summary>
     public sealed class StageHero
     {
@@ -81,7 +94,46 @@ namespace Game.Shared.Stages
         /// Starts the current scene with these champions (Front first). The rest wait at the door
         /// and heal BAL-21 % of max HP (CMB-9). Enemies use the stage level (BAL-19).
         /// </summary>
-        public Fight Enter(IReadOnlyList<string> partyFrontFirst)
+        public Fight Enter(IReadOnlyList<string> partyFrontFirst) => Enter(partyFrontFirst, RoomOption.Clash).Fight!;
+
+        /// <summary>
+        /// CMB-7 Noise + room rules: which options this party may pick here. Stealth options need the
+        /// scene Reading (D-99); Strike Out needs a solo Assassin, Spin a Tale a Support in the party.
+        /// </summary>
+        public IReadOnlyList<RoomOption> Allowed(IReadOnlyList<string> party)
+        {
+            var list = new List<RoomOption> { RoomOption.Clash };
+            bool reading = Scene.Alert == Alert.Reading;
+            if (reading && party.Count <= 2) list.Add(RoomOption.MarginStrike);
+            if (reading && party.Count == 1 && ClassOf(party[0]) == HeroClass.Assassin) list.Add(RoomOption.StrikeOut);
+            if (reading && party.Count == 1) list.Add(RoomOption.BetweenTheLines);
+            if (party.Any(id => ClassOf(id) == HeroClass.Support)) list.Add(RoomOption.SpinATale);
+            return list;
+        }
+
+        /// <summary>
+        /// BAL-22: base + per-level × (party average level − scene level), Assassin bonus on
+        /// Strike Out / Between the Lines, Support bonus on Spin a Tale, clamped. 100 if no roll.
+        /// </summary>
+        public int Chance(RoomOption option, IReadOnlyList<string> party)
+        {
+            if (option == RoomOption.Clash || option == RoomOption.MarginStrike) return 100;
+            var r = _db.StageRules;
+            decimal avg = party.Select(id => (decimal)Hero(id).Level).Average();
+            decimal chance = r.RoomBasePercent + r.RoomPerLevelPercent * (avg - Stage.EnemyLevel);
+            bool assassin = party.Any(id => ClassOf(id) == HeroClass.Assassin);
+            if ((option == RoomOption.StrikeOut || option == RoomOption.BetweenTheLines) && assassin)
+                chance += r.RoomClassBonusPercent;
+            if (option == RoomOption.SpinATale) chance += r.RoomClassBonusPercent; // Support required
+            int pct = (int)Math.Round(chance, MidpointRounding.AwayFromZero);
+            return Math.Max(r.RoomMinPercent, Math.Min(r.RoomMaxPercent, pct));
+        }
+
+        /// <summary>
+        /// Starts the current scene with a room option. Strike Out needs <paramref name="strikeTarget"/>
+        /// (enemy index, non-Elite, BAL-24). Rolls use their own stream from the stage seed (A3).
+        /// </summary>
+        public SceneStart Enter(IReadOnlyList<string> partyFrontFirst, RoomOption option, int strikeTarget = -1)
         {
             if (State != StageState.ChooseParty) throw new InvalidOperationException($"Can't enter while {State}");
             if (partyFrontFirst.Count < 1 || partyFrontFirst.Count > Scene.Capacity)
@@ -91,15 +143,49 @@ namespace Game.Shared.Stages
             var party = partyFrontFirst.Select(id => _team.FirstOrDefault(h => h.Id == id)
                 ?? throw new ArgumentException($"{id} is not in the team")).ToList();
             if (party.Any(h => h.IsDown)) throw new ArgumentException("Down champions can't enter (CMB-34)");
+            if (!Allowed(partyFrontFirst).Contains(option))
+                throw new ArgumentException($"{option} isn't allowed here with {party.Count} champion(s) (CMB-7)");
+            var enemies = Scene.Enemies.ToList();
+            if (option == RoomOption.StrikeOut &&
+                (strikeTarget < 0 || strikeTarget >= enemies.Count || _db.Enemy(enemies[strikeTarget]).Elite))
+                throw new ArgumentException("Strike Out needs a non-Elite target (BAL-24)");
 
             foreach (var h in _team.Where(h => !h.IsDown && !party.Contains(h)))
                 h.Hp = Math.Min(h.MaxHp, h.Hp + Pct(h.MaxHp, _db.StageRules.DoorHealPercent));
 
             _party = party;
+            var start = new SceneStart { Option = option, Chance = Chance(option, partyFrontFirst) };
+            var roll = new SeededRandom(_seeds.NextULong());
+            if (start.Chance < 100) start.Success = roll.RollPercent(start.Chance);
+
+            Side? opening = null;
+            int openingIndex = -1, crit = 0;
+            switch (option)
+            {
+                case RoomOption.MarginStrike:
+                    opening = Side.Heroes; crit = _db.StageRules.MarginStrikeCritPercent; break;
+                case RoomOption.SpinATale:
+                    opening = start.Success ? Side.Heroes : Side.Enemies; break; // Enthral: enemies skip
+                case RoomOption.BetweenTheLines:
+                    if (start.Success) { PassScene(); return start; }
+                    opening = Side.Enemies; break; // spotted: enemies act first
+                case RoomOption.StrikeOut:
+                    if (start.Success)
+                    {
+                        enemies.RemoveAt(strikeTarget); // crossed out of the story
+                        if (enemies.Count == 0) { PassScene(); return start; }
+                    }
+                    else { opening = Side.Enemies; openingIndex = strikeTarget; } // target strikes first
+                    break;
+            }
+
             Fight = new Fight(_db, new FightSetup
             {
+                Opening = opening,
+                OpeningEnemyIndex = openingIndex,
+                OpeningCritBonus = crit,
                 Heroes = party.Select(h => new HeroEntry { ChampionId = h.Id, Level = h.Level, Rank = h.Rank, Hp = h.Hp }).ToList(),
-                Enemies = Scene.Enemies.Select(id => new EnemyEntry { EnemyId = id, Level = Stage.EnemyLevel }).ToList(),
+                Enemies = enemies.Select(id => new EnemyEntry { EnemyId = id, Level = Stage.EnemyLevel }).ToList(),
                 Bench = _team.Where(h => !h.IsDown && !party.Contains(h))
                     .Select(h => new HeroEntry { ChampionId = h.Id, Level = h.Level, Rank = h.Rank, Hp = h.Hp }).ToList(),
                 HeroCapacity = Scene.Capacity,
@@ -109,7 +195,17 @@ namespace Game.Shared.Stages
                 Seed = _seeds.NextULong(),
             });
             State = StageState.Fighting;
-            return Fight;
+            start.Fight = Fight;
+            return start;
+        }
+
+        private HeroClass ClassOf(string id) => _db.Champion(id).Class;
+
+        /// <summary>Scene passed without a fight (stealth success).</summary>
+        private void PassScene()
+        {
+            if (SceneIndex + 1 >= Stage.Scenes.Count) State = StageState.Cleared;
+            else SceneIndex++;
         }
 
         /// <summary>

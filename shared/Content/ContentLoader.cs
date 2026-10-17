@@ -52,6 +52,10 @@ namespace Game.Shared.Content
             ValidateEnemies(enemyFile, combat, errors);
             ValidateStages(stages, champions, enemyFile, combat, errors);
             CheckRange(stageFile.DoorHealPercent, 0, 100, "stages: doorHealPercent", errors);
+            CheckRange(stageFile.RoomMinPercent, 0, 100, "stages: roomMinPercent", errors);
+            CheckRange(stageFile.RoomMaxPercent, stageFile.RoomMinPercent, 100, "stages: roomMaxPercent", errors);
+            CheckRange(stageFile.RoomBasePercent, 0, 100, "stages: roomBasePercent", errors);
+            CheckRange(stageFile.MarginStrikeCritPercent, 0, 100, "stages: marginStrikeCritPercent", errors);
             if (errors.Count > 0)
                 throw new ContentException("Invalid content:\n- " + string.Join("\n- ", errors));
 

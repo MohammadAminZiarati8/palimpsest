@@ -43,6 +43,15 @@ namespace Game.Shared.Combat
         public List<ArrivalEntry> Arrivals { get; set; } = new List<ArrivalEntry>();
         /// <summary>ENM-9: what a Herald's Ring writes in.</summary>
         public List<EnemyEntry> Reinforcements { get; set; } = new List<EnemyEntry>();
+        /// <summary>
+        /// Room options (CMB room table): one side acts alone before round 1 ("round 0").
+        /// Margin Strike / Spin a Tale = Heroes; failed stealth = Enemies.
+        /// </summary>
+        public Side? Opening { get; set; }
+        /// <summary>Strike Out failure: only this enemy (index in Enemies) acts in the opening.</summary>
+        public int OpeningEnemyIndex { get; set; } = -1;
+        /// <summary>BAL-23 Margin Strike: crit chance added to hero hits in the opening.</summary>
+        public int OpeningCritBonus { get; set; }
         /// <summary>Battle seed from the server (A3).</summary>
         public ulong Seed { get; set; }
     }
@@ -85,6 +94,11 @@ namespace Game.Shared.Combat
         /// <summary>Enemies waiting to enter: (entry, last round before they may enter).</summary>
         private readonly List<(EnemyEntry Entry, int AfterRound)> _incoming = new List<(EnemyEntry, int)>();
         private readonly List<EnemyEntry> _reinforcements;
+        private Side? _opening;
+        private FightUnit? _openingOnly;
+        private readonly int _openingCrit;
+        /// <summary>True during the room-option opening (Round 0).</summary>
+        public bool InOpening { get; private set; }
         private readonly Dictionary<FightUnit, Intent> _intents = new Dictionary<FightUnit, Intent>();
         private int _turn;
         private long _sequence;
@@ -128,6 +142,15 @@ namespace Game.Shared.Combat
 
             foreach (var h in setup.Heroes) AddHero(h);
             foreach (var e in setup.Enemies) AddEnemy(e);
+
+            _opening = setup.Opening;
+            _openingCrit = setup.OpeningCritBonus;
+            if (setup.OpeningEnemyIndex >= 0)
+            {
+                if (_opening != Side.Enemies || setup.OpeningEnemyIndex >= setup.Enemies.Count)
+                    throw new ArgumentException("OpeningEnemyIndex needs an enemy opening and a valid index");
+                _openingOnly = _lines[Side.Enemies][setup.OpeningEnemyIndex];
+            }
         }
 
         /// <summary>Champions still waiting at the door (CMB-10).</summary>
@@ -253,7 +276,8 @@ namespace Game.Shared.Combat
                 if (_queue.Count > 0) return _queue.Peek();
                 // CMB-43: still going after the last allowed round = loss.
                 if (Round >= RoundCap) { End(FightOutcome.Lost, LossReason.RoundCap); return null; }
-                StartRound();
+                if (_opening != null) StartOpening();
+                else StartRound();
             }
         }
 
@@ -342,7 +366,7 @@ namespace Game.Shared.Combat
             foreach (var target in Targeting.Hits(this, skill, primary))
             {
                 var (amount, crit) = DamageCalc.Roll(Random, Db.Combat, actor, skill, target,
-                    Targeting.IsExposed(actor, target));
+                    Targeting.IsExposed(actor, target), InOpening && actor.Side == Side.Heroes ? _openingCrit : 0);
                 hits.Add(new Hit(target, amount, crit));
             }
             // Apply after all rolls so a Down primary doesn't shift who Splash hits.
@@ -433,13 +457,31 @@ namespace Game.Shared.Combat
             return lost;
         }
 
+        /// <summary>Round 0: only the opening side (or one enemy) acts, in turn order (BAL-23, BAL-24).</summary>
+        private void StartOpening()
+        {
+            var side = _opening!.Value;
+            _opening = null;
+            InOpening = true;
+            _queue.Clear();
+            var who = _openingOnly != null ? new[] { _openingOnly } : _lines[side].AsEnumerable();
+            foreach (var u in _order.Build(who)) _queue.Enqueue(u);
+            PlanIntents();
+        }
+
         private void StartRound()
         {
+            InOpening = false;
             Round++;
             BringInArrivals();
             _queue.Clear();
             foreach (var u in _order.Build(_lines[Side.Heroes].Concat(_lines[Side.Enemies])))
                 _queue.Enqueue(u);
+            PlanIntents();
+        }
+
+        private void PlanIntents()
+        {
             _intents.Clear();
             foreach (var e in _lines[Side.Enemies])
             {

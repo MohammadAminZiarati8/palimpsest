@@ -1,6 +1,12 @@
 {
-  "_doc": "Campaign stages in play order (CMB-3..8, CMB-17, CMB-22, ENM-9). Lineups D-95. enemyLevel BAL-19. heroes = champions the story allows. Enemies Front first; arrivals join the end of the enemy line after inRounds; reinforcements = what a Herald's Ring writes in.",
+  "_doc": "Campaign stages in play order (CMB-3..8, CMB-17, CMB-22, ENM-9). Lineups D-95. Door heal BAL-21, room option % BAL-22, Margin Strike BAL-23. enemyLevel BAL-19. heroes = champions the story allows. Enemies Front first; arrivals join the end of the enemy line after inRounds; reinforcements = what a Herald's Ring writes in.",
   "doorHealPercent": 15,
+  "roomBasePercent": 50,
+  "roomPerLevelPercent": 5,
+  "roomClassBonusPercent": 15,
+  "roomMinPercent": 5,
+  "roomMaxPercent": 95,
+  "marginStrikeCritPercent": 50,
   "stages": [
     {
       "id": "P1", "name": "Prologue 1", "chapter": "Prologue", "enemyLevel": 1, "heroes": ["c01", "c02"],

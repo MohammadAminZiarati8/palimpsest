@@ -14,6 +14,14 @@ namespace Game.Shared.Content
         [JsonProperty("_doc")] public string? Doc { get; set; }
         /// <summary>BAL-21: HP % of max a hero heals per scene waited at the door (CMB-9).</summary>
         public int DoorHealPercent { get; set; }
+        /// <summary>BAL-22 room option %: base ± per level vs scene, class bonus, clamp.</summary>
+        public int RoomBasePercent { get; set; }
+        public int RoomPerLevelPercent { get; set; }
+        public int RoomClassBonusPercent { get; set; }
+        public int RoomMinPercent { get; set; }
+        public int RoomMaxPercent { get; set; }
+        /// <summary>BAL-23.</summary>
+        public int MarginStrikeCritPercent { get; set; }
         public List<StageDef> Stages { get; set; } = new List<StageDef>();
     }
 

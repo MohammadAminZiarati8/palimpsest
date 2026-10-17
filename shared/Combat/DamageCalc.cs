@@ -31,9 +31,9 @@ namespace Game.Shared.Combat
 
         /// <summary>Rolls crit, then spread, then computes one hit (fixed roll order keeps replays equal).</summary>
         public static (int Amount, bool Crit) Roll(SeededRandom rng, CombatRules rules,
-            FightUnit attacker, SkillDef skill, FightUnit target, bool exposed)
+            FightUnit attacker, SkillDef skill, FightUnit target, bool exposed, int extraCrit = 0)
         {
-            int chance = CritChance(rules, attacker.Stats.CritChance, skill.CritChanceBonus, exposed);
+            int chance = CritChance(rules, attacker.Stats.CritChance, skill.CritChanceBonus + extraCrit, exposed);
             bool crit = rng.RollPercent(chance) | attacker.SureCrit; // always roll: same RNG use either way
             int range = rules.SpreadPercent * SpreadSteps;
             int spread = rng.NextInt(-range, range + 1);
