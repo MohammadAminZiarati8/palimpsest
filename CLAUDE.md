@@ -35,6 +35,7 @@
 | `docs/gdd/11-story.md` | Story beats per Volume/chapter, rescues |
 | `docs/gdd/balancing.md` | Seeding placeholder numbers |
 | `docs/gdd/glossary.md` | Unknown game term |
+| `docs/art/style.md` | Making or briefing art (ART-n rules, Gemini prompt) |
 | `docs/tech/architecture.md` | Cross-cutting design, client/server split |
 | `docs/tech/backend.md` | Backend work |
 | `docs/tech/unity.md` | Unity work |
