@@ -89,7 +89,7 @@
   | ▼ | 250 | 70 | 20 | 92 |
   | ● | 400 | 100 | 35 | 99 |
   | ▲ | 600 | 130 | 50 | — |
-- **BAL-17** Enemy growth +9% HP/Atk/Def per level, linear like BAL-8 (D-81, Proposed). Elite: extra HP ×3, Atk ×1.5. Evasion 0 in the demo. All enemies Crit Chance 5%, Crit Damage +50% (per-enemy override in content, D-76).
+- **BAL-17** Enemy growth +9% HP/Atk/Def per level, linear like BAL-8 (D-81). Elite: extra HP ×3, Atk ×1.5. Evasion 0 in the demo. All enemies Crit Chance 5%, Crit Damage +50% (per-enemy override in content, D-76).
 - **BAL-18** Kits:
   | Censor | Skills |
   |---|---|
