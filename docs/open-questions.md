@@ -23,4 +23,3 @@
 | Q-24 | Brand | Game title (trademark check) | Store, marketing |
 | Q-25 | Enemies | Boss list per Volume (candidates in `gdd/10-enemies.md`) | GDD-2 / GDD-3 |
 | Q-26 | Story | Which legends appear / are rescued in each realm (candidates in `gdd/11-story.md`) | GDD-3 / GDD-4 |
-| Q-27 | Classes | ~~Mage details~~ — Resolved: D-34..D-37 | — |
