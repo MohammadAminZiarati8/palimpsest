@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./client/Library/**)",
+      "Read(./client/Temp/**)",
+      "Read(./client/Logs/**)",
+      "Read(./client/UserSettings/**)",
+      "Read(./client/Build/**)",
+      "Read(./client/Builds/**)",
+      "Read(**/obj/**)",
+      "Read(**/bin/**)",
+      "Read(./game-design-decisions.md)"
+    ]
+  }
+}
