@@ -116,16 +116,28 @@ namespace Game.Shared.Combat
         /// </summary>
         public bool Step(ActHook act)
         {
-            if (IsOver) return false;
-            FightUnit? actor;
-            while ((actor = NextActor()) == null)
-            {
-                // CMB-43: still going after the last allowed round = loss.
-                if (Round >= RoundCap) { End(FightOutcome.Lost, LossReason.RoundCap); return false; }
-                StartRound();
-            }
+            var actor = Next();
+            if (actor == null) return false;
+            _queue.Dequeue();
             TakeTurn(actor, act);
             return !IsOver;
+        }
+
+        /// <summary>
+        /// Who acts next, without taking the turn (UI waits for player input here). Starts the next
+        /// round (order + intents) if the current one is used up; null once the fight is over.
+        /// </summary>
+        public FightUnit? Next()
+        {
+            if (IsOver) return null;
+            while (true)
+            {
+                while (_queue.Count > 0 && _queue.Peek().IsDown) _queue.Dequeue();
+                if (_queue.Count > 0) return _queue.Peek();
+                // CMB-43: still going after the last allowed round = loss.
+                if (Round >= RoundCap) { End(FightOutcome.Lost, LossReason.RoundCap); return null; }
+                StartRound();
+            }
         }
 
         /// <summary>
@@ -315,16 +327,6 @@ namespace Game.Shared.Combat
                 var plan = EnemyAi.Plan(this, e);
                 if (plan != null) _intents[e] = plan;
             }
-        }
-
-        private FightUnit? NextActor()
-        {
-            while (_queue.Count > 0)
-            {
-                var u = _queue.Dequeue();
-                if (!u.IsDown) return u;
-            }
-            return null;
         }
 
         private void Add(Side side, string id, string name, StatSet<int> stats, IReadOnlyList<SkillDef> skills)

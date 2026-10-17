@@ -1,7 +1,7 @@
 # STATUS
 > Read every session. Keep under ~40 lines. Detailed history = git log.
 
-**Phase:** M2a Combat (single fight) · **Next:** M2a-T7 (Unity, needs cost OK) · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
+**Phase:** M2a Combat (single fight) · **Next:** user play-check of T7 (menu Game/Test Fight), then M2a-T8 · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
 
 ## Done (details: git log, `decisions.md`)
 - GDD for demo (universe, combat v2, enemies, story, demo scope, 4 champions, BAL-1..20); stack D-62..66; art D-68..70
@@ -17,13 +17,13 @@ Rules: CMB-12..15, 25..27, 29, 31, 40..43 · BAL-2..4, 15..18, 20. Code in `shar
 - [x] T4 Status effects + cooldowns (CMB-40, BAL-15, CMB-42)
 - [x] T5 Hero kit specials (Fade, self Def down, heal, Ward) + Shift
 - [x] T6 Enemy AI + intents (CMB-41) + determinism test (same seed + inputs = same result, A3)
-- [ ] T7 Unity fight screen, placeholder boxes, plays the sim (Unity MCP: ask cost first)
+- [x] T7 Unity fight screen, placeholder boxes, plays the sim (Unity MCP: ask cost first)
 - [ ] T8 Unity feedback (damage numbers, PrimeTween), win/lose, Seedbed 1–6 test-fight picker; user play-check
 - M2b later: Herald, doors/Join/Fall back, room options (Q7 room %/door heal, Q8 Margin Strike/Strike Out still to ask), Noise, Notice, Rewrite, Retreat
 
 ## Last session
-- 2026-10-17: M2a-T2..T6 done, sim complete in `shared/Combat`: `Fight` (lines, `Step`/`Run` + `ActHook`, `UseSkill`/`Attack`, Down + gap close, win/lose, round cap, intents), `ITurnOrder` (BAL-3), `DamageCalc` (BAL-2), `Targeting`, effects/cooldowns, `Shift`.
-- T6 `EnemyAi` (CMB-41: Plan at round start, Act with retarget) + A3 determinism test. 135 tests green.
-- D-82..86 Claude defaults; Q-27 (Corrector self-heal) behind `combat.json aiHealSelf` = false. Exposed only triggers once M2b adds rear positions.
-- Next: M2a-T7 Unity fight screen (Unity MCP: tell user the cost first).
+- 2026-10-17: M2a-T2..T7 done. Sim in `shared/Combat` (fight core, BAL-2 damage, targeting, effects/cooldowns, kits, Shift, `EnemyAi` CMB-41, A3 test; 136 tests). D-82..87 Claude defaults; Q-27 behind `aiHealSelf`.
+- T7 (scripts only, no Unity MCP, user OK): `Game.Combat.FightScreen` builds uGUI from code; menu *Game/Test Fight* creates/opens `Scenes/TestFight.unity` and plays. `Fight.Next()` peeks the next actor.
+- Not yet play-checked by the user; batch compile only. Exposed only triggers once M2b adds rear positions.
+- Next: user presses Game/Test Fight and reports issues; then M2a-T8 (feedback, PrimeTween, Seedbed picker).
 - User: one question at a time, plain words, small demo, free maintained packages, state Claude usage cost before heavy tools.

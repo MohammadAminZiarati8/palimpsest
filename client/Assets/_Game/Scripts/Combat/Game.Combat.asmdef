@@ -5,7 +5,9 @@
         "Game.Core",
         "Game.Views",
         "UniTask",
-        "PrimeTween.Runtime"
+        "PrimeTween.Runtime",
+        "UnityEngine.UI",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

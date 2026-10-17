@@ -80,6 +80,21 @@ public class FightTests
     }
 
     [Fact]
+    public void Next_PeeksWithoutTakingTheTurn()
+    {
+        var f = NewFight(["c01"], ["C1"]);
+        var (h, e) = (f.Line(Side.Heroes)[0], f.Line(Side.Enemies)[0]);
+        h.Stats.Speed = 120; e.Stats.Speed = 100;
+        Assert.Equal(h, f.Next());
+        Assert.Equal(h, f.Next());
+        Assert.Equal((1, 0), (f.Round, f.Turn));
+        FightUnit? acted = null;
+        f.Step((_, u) => acted = u);
+        Assert.Equal(h, acted);
+        Assert.Equal(e, f.Next());
+    }
+
+    [Fact]
     public void Order_RebuiltAtRoundStart_CMB43()
     {
         var f = NewFight(["c01"], ["C1"]);

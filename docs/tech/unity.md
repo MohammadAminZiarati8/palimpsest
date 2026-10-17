@@ -34,3 +34,4 @@ client/Assets/_Game/
 
 ## Status
 M0-5: `client/` created, packages resolve, asmdefs compile, Android setup applied (batch: `unity run client -- -executeMethod Game.Editor.ProjectSetup.Apply`). No scenes/code yet. M0-6: shared DLL + content copy verified (Unity compiles code using `Game.Shared`).
+M2a-T7: menu *Game/Test Fight* creates/opens `Scenes/TestFight.unity` with `Game.Combat.FightScreen` (uGUI built from code, placeholder boxes; heroes/enemies/seed on the Fight object).
