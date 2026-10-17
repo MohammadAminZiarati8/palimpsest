@@ -1,7 +1,7 @@
 # STATUS
 > Read every session. Keep under ~40 lines. Detailed history = git log.
 
-**Phase:** M0 setup (GDD for demo done) · **Next:** M0-5 Unity project · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
+**Phase:** M0 setup (GDD for demo done) · **Next:** M0-6 copy script (shared DLL + content → Unity) · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
 
 ## GDD tasks (Claude drafts, user approves — D-08)
 - [x] Universe (D-07, D-09) · Combat v2 (D-10, D-11) · Business & platform (D-12, D-13)
@@ -24,7 +24,7 @@ Campaign rewards/stars Q-05, Q-06 · Dungeons Q-14 · Gear Q-11, Q-12 · Awakeni
 - [x] M0-2 `.claude/settings.json`: deny reads of Library/Temp/Logs/obj/bin (+ builds, `game-design-decisions.md`)
 - [x] M0-3 `shared/` (Game.Shared, netstandard2.1, C# 9) + `shared.Tests/` (xUnit v3, MTP runner via `global.json`); `dotnet test` green
 - [x] M0-4 `server/` skeleton per `tech/backend.md` (DB health test skips until Docker Desktop installed)
-- [ ] M0-5 `client/` Unity project (Android, landscape, uGUI); asmdefs + folders per `tech/unity.md`
+- [x] M0-5 `client/` Unity 6.3 LTS project (Android, landscape, IL2CPP ARM64, uGUI); asmdefs + folders per `tech/unity.md`
 - [ ] M0-6 `scripts/`: copy `shared` DLL + `content/` into Unity (see `tech/unity.md`)
 - [x] M0-7 Update `tech/*.md` from Proposed → Decided for chosen stack
 
@@ -33,4 +33,5 @@ Campaign rewards/stars Q-05, Q-06 · Dungeons Q-14 · Gear Q-11, Q-12 · Awakeni
 - M0-7, M0-1 (repo on GitHub), M0-2 (Claude read-deny rules), M0-3 (shared lib + SeededRandom, A3) done.
 - Art style decided (D-68, `art/style.md`): AC Rebellion-like look; real art in demo; cut-out 2D sprites (D-69), stays 2D URP. Demo art made by Claude + Gemini + ChatGPT Plus (D-70, ART-7).
 - User rule: free, actively maintained, community-recommended packages; no cloud CI (local scripts).
+- M0-4 server skeleton + M0-5 Unity project done. User wants tool usage cost checked before heavy tools.
 - User prefers questions one at a time, plain words, small demo scope. Repo on GitHub (M0-1); commit identity set per-repo (MohammadAminZiarati8).

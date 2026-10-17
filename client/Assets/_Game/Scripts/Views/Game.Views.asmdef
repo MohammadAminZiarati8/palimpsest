@@ -1,0 +1,21 @@
+{
+    "name": "Game.Views",
+    "rootNamespace": "Game.Views",
+    "references": [
+        "Game.Core",
+        "Game.Screens",
+        "UniTask",
+        "PrimeTween.Runtime",
+        "UnityEngine.UI",
+        "Unity.TextMeshPro"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

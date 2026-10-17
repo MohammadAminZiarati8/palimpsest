@@ -1,0 +1,19 @@
+{
+    "name": "Game.Combat",
+    "rootNamespace": "Game.Combat",
+    "references": [
+        "Game.Core",
+        "Game.Views",
+        "UniTask",
+        "PrimeTween.Runtime"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

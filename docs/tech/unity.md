@@ -2,7 +2,9 @@
 > Read when: Unity work. Principles A1–A11: `architecture.md`.
 
 ## Setup
-- Unity 6 LTS, 2D URP. Android only, landscape (OVR-7). IL2CPP, ARM64.
+- Unity 6.3 LTS (`6000.3.23f1`, pinned in `ProjectVersion.txt`), template Universal 2D (URP 2D renderer). Android only, landscape (OVR-7). IL2CPP, ARM64.
+- Player settings live in code: `Game.Editor.ProjectSetup.Apply` (menu *Game/Apply Project Setup*). App id `com.ziarati.palimpsest` is a placeholder until Q-24.
+- UniTask + PrimeTween come from the OpenUPM scoped registry (`Packages/manifest.json`). Template extras removed: Collab, Visual Scripting, Multiplayer Center.
 - UI: uGUI + TextMeshPro (D-65). Characters: 2D Animation + PSD Importer (Unity official) for cut-out sprites (D-69, ART-6). Animation: PrimeTween. Async: UniTask. JSON: Newtonsoft (Unity package).
 - Login: Unity Authentication package. Net: HTTP+JSON via `UnityWebRequest` + UniTask; DTOs from `shared`.
 - Later: NuGetForUnity + SignalR client (live PvP).
@@ -31,4 +33,4 @@ client/Assets/_Game/
 - Placeholder art (colored shapes) until real art exists.
 
 ## Status
-Unity project not created yet (M0-5).
+M0-5: `client/` created, packages resolve, asmdefs compile, Android setup applied (batch: `unity run client -- -executeMethod Game.Editor.ProjectSetup.Apply`). No scenes/code yet. `Plugins/Shared` + `_Game/Content` copies come with M0-6.
