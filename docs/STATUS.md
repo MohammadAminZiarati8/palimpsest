@@ -1,7 +1,7 @@
 # STATUS
 > Read every session. Keep under ~40 lines. Detailed history = git log.
 
-**Phase:** M2a Combat (single fight) · **Next:** M2b planning (M2a done) · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
+**Phase:** M2a Combat (single fight) · **Next:** user OKs M2b task split, then M2b-T0 · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
 
 ## Done (details: git log, `decisions.md`)
 - GDD for demo (universe, combat v2, enemies, story, demo scope, 4 champions, BAL-1..20); stack D-62..66; art D-68..70
@@ -19,11 +19,22 @@ Rules: CMB-12..15, 25..27, 29, 31, 40..43 · BAL-2..4, 15..18, 20. Code in `shar
 - [x] T6 Enemy AI + intents (CMB-41) + determinism test (same seed + inputs = same result, A3)
 - [x] T7 Unity fight screen, placeholder boxes, plays the sim (Unity MCP: ask cost first)
 - [x] T8 Unity feedback (damage numbers, PrimeTween), win/lose, Seedbed 1–6 test-fight picker; user play-check
-- M2b later: Herald, doors/Join/Fall back, room options (Q7 room %/door heal, Q8 Margin Strike/Strike Out still to ask), Noise, Notice, Rewrite, Retreat
+
+## M2b — stage flow (task split Proposed, needs user OK)
+Rules: CMB-3..10, 17..23, 33..36 · Q7/Q8 answers. Code in `shared/Stages`, tests in `shared.Tests`.
+- [ ] T0 Docs: ask Q7 (room option %, door heal) + Q8 (Margin Strike, Strike Out numbers), one at a time
+- [ ] T1 Content: `stages.json` (Prologue 1–2, Seedbed 1–6: scenes, capacity, enemies, nearby arrivals, Herald) + loader checks
+- [ ] T2 Stage sim: scenes in order, party pick per scene (CMB-3/8), HP carries, door heal, Down for stage, fail, Retreat, stars (CMB-33..36)
+- [ ] T3 Join / Fall back (CMB-10), nearby arrivals (CMB-22), Herald reinforcements
+- [ ] T4 Room options + Noise (CMB-7, CMB-19): Clash, Margin Strike, Strike Out, Between the Lines, Spin a Tale
+- [ ] T5 Entry points Margin / Gutter + Bleed-through (CMB-17/18); Exposed starts to trigger (CMB-15)
+- [ ] T6 Notice meter (CMB-23) + Rewrite (CMB-20)
+- [ ] T7 Unity: stage map + scene preview + deploy screens (placeholder)
+- [ ] T8 Unity: play the whole Seedbed; user play-check
 
 ## Last session
 - 2026-10-17: M2a T2..T8 done (one session). Sim in `shared/Combat` (136 tests); Unity `Game.Combat.FightScreen` via menu *Game/Test Fight* (user play-checked T7 OK).
 - T8: Seedbed 1–6 test-fight picker (`TestFights.cs`, lineups D-88), floating damage/heal numbers (PrimeTween), win/lose panel (retry / next seed / pick).
-- Open for user: Q-27 answered (D-89, Corrector may self-heal). D-82..87 Claude defaults. T8 play-checked OK by user.
+- Decided: D-88 test lineups, D-89 Corrector may self-heal (Q-27). D-82..87 Claude defaults. T8 play-checked OK by user.
 - Next: M2b (stage flow) planning from `plan/roadmap.md`.
 - User: one question at a time, plain words, small demo, free maintained packages, state Claude usage cost before heavy tools.
