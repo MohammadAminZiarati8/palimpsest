@@ -23,12 +23,14 @@ namespace Game.Shared.Content
         public EnemyFile EnemyRules { get; }
         public IReadOnlyDictionary<string, EnemyDef> Enemies { get; }
         /// <summary>Campaign stages in play order (stages.json).</summary>
-        public IReadOnlyList<StageDef> Stages { get; }
+        public IReadOnlyList<StageDef> Stages => StageRules.Stages;
+        /// <summary>stages.json root: door heal (BAL-21) + stage list.</summary>
+        public StageFile StageRules { get; }
 
         internal ContentDb(int version, StatRules stats,
             IReadOnlyDictionary<HeroClass, ClassDef> classes, IReadOnlyDictionary<string, ChampionDef> champions,
             CombatRules combat, IReadOnlyDictionary<string, ChampionKit> kits,
-            EnemyFile enemyRules, IReadOnlyDictionary<string, EnemyDef> enemies, IReadOnlyList<StageDef> stages)
+            EnemyFile enemyRules, IReadOnlyDictionary<string, EnemyDef> enemies, StageFile stageRules)
         {
             Version = version;
             Stats = stats;
@@ -38,7 +40,7 @@ namespace Game.Shared.Content
             Kits = kits;
             EnemyRules = enemyRules;
             Enemies = enemies;
-            Stages = stages;
+            StageRules = stageRules;
         }
 
         public ChampionDef Champion(string id) =>

@@ -13,6 +13,8 @@ namespace Game.Shared.Combat
         public string ChampionId { get; set; } = "";
         public int Level { get; set; } = 1;
         public int Rank { get; set; } = 1;
+        /// <summary>CMB-33: HP carried from the last scene; null = full.</summary>
+        public int? Hp { get; set; }
     }
 
     public sealed class EnemyEntry
@@ -95,7 +97,12 @@ namespace Game.Shared.Combat
             foreach (var h in setup.Heroes)
             {
                 var def = db.Champion(h.ChampionId);
-                Add(Side.Heroes, def.Id, def.Name, StatCalculator.At(db, def, h.Level, h.Rank), db.Kit(def.Id).Skills);
+                var unit = Add(Side.Heroes, def.Id, def.Name, StatCalculator.At(db, def, h.Level, h.Rank), db.Kit(def.Id).Skills);
+                if (h.Hp is int hp)
+                {
+                    if (hp < 1) throw new ArgumentException($"{def.Id} is Down and can't enter (CMB-34)");
+                    unit.Hp = Math.Min(hp, unit.MaxHp);
+                }
             }
             foreach (var e in setup.Enemies)
             {
@@ -329,13 +336,14 @@ namespace Game.Shared.Combat
             }
         }
 
-        private void Add(Side side, string id, string name, StatSet<int> stats, IReadOnlyList<SkillDef> skills)
+        private FightUnit Add(Side side, string id, string name, StatSet<int> stats, IReadOnlyList<SkillDef> skills)
         {
             var unit = new FightUnit(_units.Count, side, id, name, stats, skills, Db.Combat.Effects);
             _units.Add(unit);
             var line = _lines[side];
             line.Add(unit);
             unit.Line = line.Count - 1;
+            return unit;
         }
 
         private void End(FightOutcome outcome, LossReason reason)

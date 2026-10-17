@@ -12,6 +12,8 @@ namespace Game.Shared.Content
     public sealed class StageFile
     {
         [JsonProperty("_doc")] public string? Doc { get; set; }
+        /// <summary>BAL-21: HP % of max a hero heals per scene waited at the door (CMB-9).</summary>
+        public int DoorHealPercent { get; set; }
         public List<StageDef> Stages { get; set; } = new List<StageDef>();
     }
 

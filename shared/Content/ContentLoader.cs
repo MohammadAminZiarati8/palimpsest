@@ -37,7 +37,8 @@ namespace Game.Shared.Content
             var combat = Parse<CombatRules>(source, "combat");
             var kits = Parse<SkillFile>(source, "skills").Kits;
             var enemyFile = Parse<EnemyFile>(source, "enemies");
-            var stages = Parse<StageFile>(source, "stages").Stages;
+            var stageFile = Parse<StageFile>(source, "stages");
+            var stages = stageFile.Stages;
 
             var errors = new List<string>();
             ValidateStats(stats, errors);
@@ -50,6 +51,7 @@ namespace Game.Shared.Content
             ValidateKits(kits, champions, combat, errors);
             ValidateEnemies(enemyFile, combat, errors);
             ValidateStages(stages, champions, enemyFile, combat, errors);
+            CheckRange(stageFile.DoorHealPercent, 0, 100, "stages: doorHealPercent", errors);
             if (errors.Count > 0)
                 throw new ContentException("Invalid content:\n- " + string.Join("\n- ", errors));
 
@@ -62,7 +64,7 @@ namespace Game.Shared.Content
                 kits.GroupBy(k => k.Champion).ToDictionary(g => g.Key, g => g.First()),
                 enemyFile,
                 enemyFile.Enemies.GroupBy(e => e.Id).ToDictionary(g => g.Key, g => g.First()),
-                stages);
+                stageFile);
         }
 
         private static T Parse<T>(IContentSource source, string name) where T : class
