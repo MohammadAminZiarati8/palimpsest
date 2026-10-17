@@ -21,6 +21,7 @@
 - **DEMO-6** Stars per stage (3 = nobody Down) and replay.
 - **DEMO-7** Champion level up (XP from stages) + rank up (class materials from stages), placeholder numbers (GDD-5). Skills fixed at base level; no gear, no awakening (D-30).
 - **DEMO-8** Tutorial Recall only: one scripted summon, no banners, no currency.
+- **DEMO-12** Real art, not placeholders (D-68..70): 4 heroes + demo Censors as cut-out sprites, Seedbed/Prologue room backgrounds, UI. Rules `art/style.md`.
 - **DEMO-9** Online (D-31): guest login, progress saved on the server, server re-checks stage results (slice of M3/M4).
 
 ## Systems out (after the demo)

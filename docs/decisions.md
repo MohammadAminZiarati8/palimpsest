@@ -72,3 +72,4 @@
 | 2026-10-17 | D-67 | Repo: github.com/MohammadAminZiarati8/palimpsest (private), branch `main`; commits signed MohammadAminZiarati8 (repo-local git config) | User approval |
 | 2026-10-17 | D-68 | Art style = stylized 3D game-model look like AC Rebellion (big head ~2.5–3 heads, mature sculpted faces, matte detailed costumes); rules ART-1..5 in `art/style.md`. Real art in demo, not placeholders | User approval |
 | 2026-10-17 | D-69 | Characters = 2D cut-out sprites animated with bones (Unity 2D Animation + PSD Importer), not 3D models, not frame-by-frame. D-64 2D URP unchanged (ART-6) | User approval |
+| 2026-10-17 | D-70 | Demo art pipeline: Claude + Gemini + ChatGPT Plus (hero picture → parts sheet → Claude crops, rigs, animates in Unity); no hired artist for the demo (ART-7, DEMO-12). Launch art/audio still Q-23 | User approval |

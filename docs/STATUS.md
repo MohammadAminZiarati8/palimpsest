@@ -1,7 +1,7 @@
 # STATUS
 > Read every session. Keep under ~40 lines. Detailed history = git log.
 
-**Phase:** M0 setup (GDD for demo done) · **Next:** art pipeline Q-23 (who makes/cuts art) → M0-4
+**Phase:** M0 setup (GDD for demo done) · **Next:** M0-4 server skeleton (needs Docker Desktop) · art: first hero parts-sheet test (ART-7)
 
 ## GDD tasks (Claude drafts, user approves — D-08)
 - [x] Universe (D-07, D-09) · Combat v2 (D-10, D-11) · Business & platform (D-12, D-13)
@@ -31,6 +31,6 @@ Campaign rewards/stars Q-05, Q-06 · Dungeons Q-14 · Gear Q-11, Q-12 · Awakeni
 ## Last session
 - 2026-10-17: Q-04 → uGUI (D-65). Architecture A1–A11 approved (D-66): added safe retries, ledger, content version, client layers, stateless server, modules.
 - M0-7, M0-1 (repo on GitHub), M0-2 (Claude read-deny rules), M0-3 (shared lib + SeededRandom, A3) done.
-- Art style decided (D-68, `art/style.md`): AC Rebellion-like look; real art in demo; cut-out 2D sprites (D-69), stays 2D URP.
+- Art style decided (D-68, `art/style.md`): AC Rebellion-like look; real art in demo; cut-out 2D sprites (D-69), stays 2D URP. Demo art made by Claude + Gemini + ChatGPT Plus (D-70, ART-7).
 - User rule: free, actively maintained, community-recommended packages; no cloud CI (local scripts).
 - User prefers questions one at a time, plain words, small demo scope. Repo on GitHub (M0-1); commit identity set per-repo (MohammadAminZiarati8).

@@ -8,7 +8,8 @@
 - **ART-4** Each hero keeps one accent colour (e.g. Margo orange-red) and one Palimpsest motif (paper, ink, pen).
 - **ART-5** Hero select / collection: hero on glowing blue ring pedestal, dark blue background.
 - **ART-6** Characters = 2D cut-out sprites (D-69): one hero picture split into layered parts (PSB), animated with bones (Unity 2D Animation). Fixed 3/4 view facing one side; no frame-by-frame sprites.
-- Open: who makes/cuts the art, budget (Q-23).
+- **ART-7** Demo pipeline (D-70): Gemini + ChatGPT Plus (GPT image) make the hero picture, then a **parts sheet** of the same hero (each body part whole, separated, plain background). Claude crops parts (script), assembles and rigs them in Unity (Unity MCP), animates. Fallback if a parts sheet fails: user fixes in Krita.
+- Open: launch art, audio, team, budget (Q-23).
 
 ## Gemini prompt (attach AC Rebellion screenshots as style reference)
 ```text
