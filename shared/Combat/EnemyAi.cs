@@ -29,6 +29,7 @@ namespace Game.Shared.Combat
                 if (target != null) return new Intent(skill, target);
             }
             var s1 = unit.Skill(SkillSlot.S1);
+            if (!unit.CanUse(s1)) return null; // e.g. a Herald that already rang (D-97)
             var t1 = PickTarget(fight, unit, s1);
             return t1 == null ? null : new Intent(s1, t1);
         }

@@ -51,6 +51,10 @@ namespace Game.Shared.Combat
         /// <summary>CMB-11: 0 = Front (next to the centre), counting back. -1 once Down (slot freed, CMB-14).</summary>
         public int Line { get; internal set; }
         public IReadOnlyList<ActiveEffect> Effects => _effects;
+        public int Level { get; internal set; } = 1;
+        public int Rank { get; internal set; } = 1;
+        /// <summary>Herald: own Ring uses left until it rings (0 = rung or no Ring, ENM-9).</summary>
+        public int RingIn { get; internal set; }
 
         /// <summary>Pell S3 Fade: own turns left untargetable by Single skills (ticks like effects, D-84).</summary>
         public int FadeRounds { get; private set; }
@@ -90,7 +94,8 @@ namespace Game.Shared.Combat
 
         /// <summary>Ready (CMB-42) and not Sealed (CMB-40).</summary>
         public bool CanUse(SkillDef skill) =>
-            Cooldown(skill.Slot) == 0 && !_effects.Any(e => e.Type == StatusEffect.Seal && e.Slot == skill.Slot);
+            Cooldown(skill.Slot) == 0 && !_effects.Any(e => e.Type == StatusEffect.Seal && e.Slot == skill.Slot)
+            && !(skill.Special?.Type == SpecialType.Ring && RingIn <= 0); // D-97: rings once
 
         internal void StartCooldown(SkillDef skill)
         {

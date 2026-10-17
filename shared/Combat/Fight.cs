@@ -23,11 +23,26 @@ namespace Game.Shared.Combat
         public int Level { get; set; } = 1;
     }
 
+    /// <summary>CMB-22 nearby enemy: joins the end of the enemy line after InRounds rounds.</summary>
+    public sealed class ArrivalEntry
+    {
+        public string EnemyId { get; set; } = "";
+        public int Level { get; set; } = 1;
+        public int InRounds { get; set; }
+    }
+
     /// <summary>One scene's fight. Lists are in line order, Front first (CMB-11).</summary>
     public sealed class FightSetup
     {
         public List<HeroEntry> Heroes { get; set; } = new List<HeroEntry>();
         public List<EnemyEntry> Enemies { get; set; } = new List<EnemyEntry>();
+        /// <summary>CMB-10: champions waiting at the door who may Join.</summary>
+        public List<HeroEntry> Bench { get; set; } = new List<HeroEntry>();
+        /// <summary>CMB-8 scene capacity: most champions on the field at once (Join limit).</summary>
+        public int HeroCapacity { get; set; } = Fight.MaxSlots;
+        public List<ArrivalEntry> Arrivals { get; set; } = new List<ArrivalEntry>();
+        /// <summary>ENM-9: what a Herald's Ring writes in.</summary>
+        public List<EnemyEntry> Reinforcements { get; set; } = new List<EnemyEntry>();
         /// <summary>Battle seed from the server (A3).</summary>
         public ulong Seed { get; set; }
     }
@@ -65,6 +80,11 @@ namespace Game.Shared.Combat
         private readonly List<FightUnit> _units = new List<FightUnit>();
         private readonly Queue<FightUnit> _queue = new Queue<FightUnit>();
         private readonly ITurnOrder _order;
+        private readonly List<HeroEntry> _bench;
+        private readonly int _heroCapacity;
+        /// <summary>Enemies waiting to enter: (entry, last round before they may enter).</summary>
+        private readonly List<(EnemyEntry Entry, int AfterRound)> _incoming = new List<(EnemyEntry, int)>();
+        private readonly List<EnemyEntry> _reinforcements;
         private readonly Dictionary<FightUnit, Intent> _intents = new Dictionary<FightUnit, Intent>();
         private int _turn;
         private long _sequence;
@@ -94,20 +114,110 @@ namespace Game.Shared.Combat
             CheckSize(setup.Heroes.Count, "heroes");
             CheckSize(setup.Enemies.Count, "enemies");
 
-            foreach (var h in setup.Heroes)
+            if (setup.HeroCapacity < setup.Heroes.Count || setup.HeroCapacity > MaxSlots)
+                throw new ArgumentException($"HeroCapacity {setup.HeroCapacity} must fit the heroes and be <= {MaxSlots}");
+            _heroCapacity = setup.HeroCapacity;
+            _bench = setup.Bench.ToList();
+            _reinforcements = setup.Reinforcements.ToList();
+            foreach (var a in setup.Arrivals)
             {
-                var def = db.Champion(h.ChampionId);
-                var unit = Add(Side.Heroes, def.Id, def.Name, StatCalculator.At(db, def, h.Level, h.Rank), db.Kit(def.Id).Skills);
-                if (h.Hp is int hp)
-                {
-                    if (hp < 1) throw new ArgumentException($"{def.Id} is Down and can't enter (CMB-34)");
-                    unit.Hp = Math.Min(hp, unit.MaxHp);
-                }
+                if (a.InRounds < 1) throw new ArgumentException("Arrival inRounds must be >= 1");
+                db.Enemy(a.EnemyId);
+                _incoming.Add((new EnemyEntry { EnemyId = a.EnemyId, Level = a.Level }, a.InRounds));
             }
-            foreach (var e in setup.Enemies)
+
+            foreach (var h in setup.Heroes) AddHero(h);
+            foreach (var e in setup.Enemies) AddEnemy(e);
+        }
+
+        /// <summary>Champions still waiting at the door (CMB-10).</summary>
+        public IReadOnlyList<HeroEntry> Bench => _bench;
+        /// <summary>Enemies not yet on the field (arrivals + rung-in reinforcements).</summary>
+        public int IncomingCount => _incoming.Count;
+        /// <summary>Herald rings so far (Notice +2 each, CMB-23, counted by the stage).</summary>
+        public int Rings { get; private set; }
+
+        /// <summary>
+        /// CMB-10 Join: a waiting champion enters at the Main Door end (our Back) if the scene's capacity
+        /// allows. Free, between turns; it acts from the next round (CMB-43).
+        /// </summary>
+        public FightUnit Join(string championId)
+        {
+            if (IsOver) throw new InvalidOperationException("Fight is over");
+            var entry = _bench.FirstOrDefault(b => b.ChampionId == championId)
+                        ?? throw new ArgumentException($"{championId} is not waiting at the door");
+            if (_lines[Side.Heroes].Count >= _heroCapacity)
+                throw new InvalidOperationException($"Scene is full ({_heroCapacity}, CMB-8)");
+            _bench.Remove(entry);
+            return AddHero(entry);
+        }
+
+        /// <summary>
+        /// CMB-10 Fall back: the champion leaves to the door, keeping its HP (costs its turn: use it as the
+        /// turn's action). Units behind close the gap. It may Join again later.
+        /// </summary>
+        public void FallBack(FightUnit hero)
+        {
+            if (IsOver) throw new InvalidOperationException("Fight is over");
+            if (hero.Side != Side.Heroes || hero.IsDown || hero.Line < 0)
+                throw new ArgumentException($"{hero} can't fall back");
+            var line = _lines[Side.Heroes];
+            line.Remove(hero);
+            hero.Line = -1;
+            Reindex(line);
+            _bench.Add(new HeroEntry { ChampionId = hero.DefId, Level = hero.Level, Rank = hero.Rank, Hp = hero.Hp });
+            _fallenBack.Add(hero);
+        }
+
+        private readonly List<FightUnit> _fallenBack = new List<FightUnit>();
+        /// <summary>Hero units that fell back (their HP is in the bench entry; for HP carry, CMB-33).</summary>
+        public IReadOnlyList<FightUnit> FallenBack => _fallenBack;
+
+        private FightUnit AddHero(HeroEntry h)
+        {
+            var def = Db.Champion(h.ChampionId);
+            var unit = Add(Side.Heroes, def.Id, def.Name, StatCalculator.At(Db, def, h.Level, h.Rank), Db.Kit(def.Id).Skills);
+            unit.Level = h.Level;
+            unit.Rank = h.Rank;
+            if (h.Hp is int hp)
             {
-                var def = db.Enemy(e.EnemyId);
-                Add(Side.Enemies, def.Id, def.Name, EnemyStatCalculator.At(db, def, e.Level), def.Skills);
+                if (hp < 1) throw new ArgumentException($"{def.Id} is Down and can't enter (CMB-34)");
+                unit.Hp = Math.Min(hp, unit.MaxHp);
+            }
+            return unit;
+        }
+
+        private FightUnit AddEnemy(EnemyEntry e)
+        {
+            var def = Db.Enemy(e.EnemyId);
+            var unit = Add(Side.Enemies, def.Id, def.Name, EnemyStatCalculator.At(Db, def, e.Level), def.Skills);
+            unit.Level = e.Level;
+            var ring = def.Skills.FirstOrDefault(s => s.Special?.Type == SpecialType.Ring);
+            if (ring != null) unit.RingIn = ring.Special!.Rounds;
+            return unit;
+        }
+
+        /// <summary>
+        /// ENM-9 Herald Ring (D-97: once per fight). Each use counts down; at 0 the reinforcements are
+        /// written in at the end of the enemy line from the next round.
+        /// </summary>
+        private void Ring(FightUnit herald)
+        {
+            if (herald.RingIn <= 0) return;
+            if (--herald.RingIn > 0) return;
+            Rings++;
+            foreach (var r in _reinforcements) _incoming.Add((r, Round));
+        }
+
+        /// <summary>CMB-22: enemies due (after their rounds) enter while a slot is free (D-97).</summary>
+        private void BringInArrivals()
+        {
+            var line = _lines[Side.Enemies];
+            foreach (var a in _incoming.ToList())
+            {
+                if (Round <= a.AfterRound || line.Count >= MaxSlots) continue;
+                _incoming.Remove(a);
+                AddEnemy(a.Entry);
             }
         }
 
@@ -190,6 +300,7 @@ namespace Game.Shared.Combat
             }
             ApplySkillEffects(actor, skill, targets);
             if (skill.Special?.Type == SpecialType.Fade) actor.Fade(skill.Special.Rounds, _turn);
+            if (skill.Special?.Type == SpecialType.Ring) Ring(actor);
             actor.StartCooldown(skill);
             return new List<Hit>();
         }
@@ -318,13 +429,14 @@ namespace Game.Shared.Combat
             Reindex(line);
 
             if (_lines[Side.Enemies].Count == 0) End(FightOutcome.Won, LossReason.None);
-            else if (_lines[Side.Heroes].Count == 0) End(FightOutcome.Lost, LossReason.HeroesDown);
+            else if (_lines[Side.Heroes].Count == 0 && _bench.Count == 0) End(FightOutcome.Lost, LossReason.HeroesDown);
             return lost;
         }
 
         private void StartRound()
         {
             Round++;
+            BringInArrivals();
             _queue.Clear();
             foreach (var u in _order.Build(_lines[Side.Heroes].Concat(_lines[Side.Enemies])))
                 _queue.Enqueue(u);

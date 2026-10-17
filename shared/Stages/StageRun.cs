@@ -34,7 +34,7 @@ namespace Game.Shared.Stages
     /// <summary>
     /// M2b-T2 stage flow: scenes in order (CMB-3), party pick per scene within capacity (CMB-8),
     /// waiting heroes heal at the door (CMB-9, BAL-21), HP carries (CMB-33), Down for the stage (CMB-34),
-    /// Retreat any time (CMB-35), 3 stars = nobody Down (CMB-36). Room options, Join, arrivals: T3/T4.
+    /// Retreat any time (CMB-35), 3 stars = nobody Down (CMB-36). Join / Fall back / arrivals / Herald live in <see cref="Combat.Fight"/>; room options: T4.
     /// Every scene's fight seed comes from the stage seed, so a replay with the same inputs matches (A3).
     /// </summary>
     public sealed class StageRun
@@ -100,6 +100,12 @@ namespace Game.Shared.Stages
             {
                 Heroes = party.Select(h => new HeroEntry { ChampionId = h.Id, Level = h.Level, Rank = h.Rank, Hp = h.Hp }).ToList(),
                 Enemies = Scene.Enemies.Select(id => new EnemyEntry { EnemyId = id, Level = Stage.EnemyLevel }).ToList(),
+                Bench = _team.Where(h => !h.IsDown && !party.Contains(h))
+                    .Select(h => new HeroEntry { ChampionId = h.Id, Level = h.Level, Rank = h.Rank, Hp = h.Hp }).ToList(),
+                HeroCapacity = Scene.Capacity,
+                Arrivals = Scene.Arrivals.Select(a => new ArrivalEntry
+                    { EnemyId = a.Enemy, Level = Stage.EnemyLevel, InRounds = a.InRounds }).ToList(),
+                Reinforcements = Scene.Reinforcements.Select(id => new EnemyEntry { EnemyId = id, Level = Stage.EnemyLevel }).ToList(),
                 Seed = _seeds.NextULong(),
             });
             State = StageState.Fighting;
@@ -108,14 +114,15 @@ namespace Game.Shared.Stages
 
         /// <summary>
         /// Call once the scene's fight is over: HP and Down carry back (CMB-33/34). Win → next scene or
-        /// Cleared; loss → Failed (Join of waiting champions arrives in T3).
+        /// Cleared; loss → Failed (all champions Down or round cap; waiting ones could Join, CMB-10).
         /// </summary>
         public void EndScene()
         {
             if (State != StageState.Fighting || Fight == null) throw new InvalidOperationException("No fight running");
             if (!Fight.IsOver) throw new InvalidOperationException("The fight isn't over");
+            // CMB-33: HP carries. Joined units and fall-backs both count; a unit's last state wins.
             foreach (var u in Fight.Units.Where(u => u.Side == Side.Heroes))
-                _party.First(h => h.Id == u.DefId).Hp = u.Hp;
+                Hero(u.DefId).Hp = u.Hp;
 
             if (Fight.Outcome != FightOutcome.Won || _team.All(h => h.IsDown)) State = StageState.Failed;
             else if (SceneIndex + 1 >= Stage.Scenes.Count) State = StageState.Cleared;

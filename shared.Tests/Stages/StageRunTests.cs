@@ -20,7 +20,7 @@ public class StageRunTests
     /// <summary>Enemies wipe the hero Front each turn.</summary>
     private static void EnemiesWin(Fight f, FightUnit u)
     {
-        if (u.Side == Side.Enemies) f.Damage(f.Line(Side.Heroes)[0], 1_000_000);
+        if (u.Side == Side.Enemies && f.Line(Side.Heroes).Count > 0) f.Damage(f.Line(Side.Heroes)[0], 1_000_000);
     }
 
     [Fact]
@@ -106,8 +106,8 @@ public class StageRunTests
     [Fact]
     public void LostFight_FailsStage()
     {
-        var r = Run("S1", ["c01", "c02", "c04"]);
-        r.Enter(["c01", "c02"]).Run(EnemiesWin);
+        var r = Run("S1", ["c01", "c02"]);
+        r.Enter(["c01", "c02"]).Run(EnemiesWin); // nobody waiting at the door
         r.EndScene();
         Assert.Equal(StageState.Failed, r.State);
         Assert.True(r.IsOver);
