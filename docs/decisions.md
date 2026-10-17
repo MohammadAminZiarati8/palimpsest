@@ -93,3 +93,4 @@
 | 2026-10-17 | D-88 | T8 test lineups (Front first; heroes Margo/Pell/White Snake one level below BAL-19, rank 2 from S4): S1 Blotter+Inkslinger · S2 Blotter+2 Inkslinger · S3 Blotter+Corrector+Inkslinger · S4 2 Blotter+Corrector · S5 Blotter+Inkslinger+Corrector · S6 Editor+Inkslinger+Corrector. Test only; real stages in M2b | User approval |
 | 2026-10-17 | D-89 | Q-27: enemy healers (Corrector) may heal themselves (CMB-41); `combat.json aiHealSelf` = true | User approval |
 | 2026-10-17 | D-90 | M2b split into T0–T8 (STATUS): questions, stages.json, stage sim, Join/arrivals/Herald, room options + Noise, entry points, Notice + Rewrite, Unity map, Seedbed play-check | User approval |
+| 2026-10-17 | D-91 | Door heal (CMB-9, BAL-21): 15% max HP per scene waited at the door (config) | User approval |

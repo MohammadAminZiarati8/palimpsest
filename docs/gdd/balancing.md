@@ -101,8 +101,10 @@
 - **BAL-19** Enemy level = expected team level + 1: Prologue 1/2 → Lv 1/2 · Seedbed 1–6 → Lv 4/6/8/10/12/14.
 - Target feel (hand math, tune in playtest): Seedbed 1 Inkslinger dies in ~1 team round, Blotter in 2–3; Inkslinger hit ≈ 10% of Pell's HP.
 
+## Demo — stage flow (M2b)
+- **BAL-21** Door recovery (CMB-9): each scene a hero waits at the door heals 15% of its max HP (D-91, config).
+
 ## Demo — not reviewed yet (Proposed, config values)
-- Door recovery (CMB-9): waiting heroes heal 10% max HP per scene.
 - Room option % (CMB-19): 50% + 5% per level above scene level; Assassin +15% on Strike Out / Between the Lines; clamp 5–95%.
 
 ## Post-demo examples (older placeholders)
