@@ -1,7 +1,7 @@
 # STATUS
 > Read every session. Keep under ~40 lines. Detailed history = git log.
 
-**Phase:** M2a Combat (single fight) · **Next:** M2b-T8 play the whole Seedbed (menu Game/Play Stages), user play-check · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
+**Phase:** M2 Combat done (M2a + M2b) · **Next:** pick the next milestone (`docs/plan/roadmap.md`; M2 done) · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
 
 ## Done (details: git log, `decisions.md`)
 - GDD for demo (universe, combat v2, enemies, story, demo scope, 4 champions, BAL-1..20); stack D-62..66; art D-68..70
@@ -30,11 +30,11 @@ Rules: CMB-3..10, 17..23, 33..36 · BAL-21..24 (D-91..94). Code in `shared/Stage
 - [x] T5 Entry points Margin / Gutter + Bleed-through (CMB-17/18); Exposed starts to trigger (CMB-15)
 - [x] T6 Notice meter (CMB-23) + Rewrite (CMB-20)
 - [x] T7 Unity: stage map + scene preview + deploy screens (placeholder)
-- [ ] T8 Unity: play the whole Seedbed; user play-check
+- [x] T8 Unity: play the whole Seedbed; user play-check
 
 ## Last session
-- 2026-10-18: M2b-T7 menu *Game/Play Stages*: stage list (unlock in order, best stars in PlayerPrefs, D-110) → scene strip + preview + deploy (D-112) → FightScreen row view with Join/Fall back/Retreat (D-113) → after-scene HP panel. Shared: `StageRun.Stars` (D-109), `CanRewrite`; team rule D-111. 211 tests.
-- Checked with `dotnet build` of the Unity csproj only: Unity MCP never connected (no MCP/Pipeline package in the project). Focus the Editor once so it imports the new scripts.
-- T8 open note: in demo content Reading scenes are always scene 1, so Notice 3+/5+ never bites; ask user whether to tune during the play-check.
-- Next: M2b-T8 play the whole Seedbed; user play-check.
+- 2026-10-19: M2b-T8 done. Claude played P1→S6 in Unity via the `unity` CLI + `com.unity.pipeline` (D-117, scripts `tools/unity-playtest/`). Fixes: skill buttons vs log, solid result/after panels, Ward "blocked" in log, room-empty pause (D-114, Proposed), Herald "waits".
+- Content: Notice bites (last scene S4/S5 Reading, patrol at 4, D-115); enemy HP/Atk +30% (D-116). S3 ends Margo ~40%, S6 ~31%, all 3 stars. 211 tests.
+- Notes: enemies nearly always hit the Front hero (Pell/Lady barely touched); demo team D-111 is still a placeholder. Revisit with real progression.
+- Next: pick the next milestone (roadmap).
 - User: one question at a time, plain words, small demo, free maintained packages, state Claude usage cost before heavy tools.

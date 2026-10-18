@@ -5,7 +5,7 @@
 |---|---|---|---|---|
 | M0 | Foundations | Repo + stack decided; skeletons for shared/server/client build; `dotnet test` runs | — (Q-03, Q-04 decided: D-62..65) | Done (DB test waits for Docker) |
 | M1 | Shared core | Content models + JSON loaders; champion stat calc (rarity, level, rank, class growth) tested | — | Done |
-| M2 | Combat | Combat spec Decided; deterministic sim in `shared`; playable Unity prototype vs test enemies. Split (D-73): M2a single fight, M2b stage flow | — (Q-02 settled, D-80) | In progress (M2a) |
+| M2 | Combat | Combat spec Decided; deterministic sim in `shared`; playable Unity prototype vs test enemies. Split (D-73): M2a single fight, M2b stage flow | — (Q-02 settled, D-80) | Done (M2a + M2b, 2026-10-19) |
 | M3 | Backend core + champion progression | Guest auth, player state, inventory/currencies, ledger; level/rank/skills end-to-end Unity↔server | Q-07, Q-08, Q-13 | Todo |
 | M4 | Campaign | Chapters/stages, star results + conditions, rewards, server-verified results | Q-05, Q-06 | Todo |
 | M5 | Gear | Equip, level, merge, Forge Stone, dismantle refund, legendary passives | Q-11, Q-12 | Todo |
