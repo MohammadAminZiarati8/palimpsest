@@ -28,7 +28,7 @@ Rules: CMB-3..10, 17..23, 33..36 · BAL-21..24 (D-91..94). Code in `shared/Stage
 - [x] T3 Join / Fall back (CMB-10), nearby arrivals (CMB-22), Herald reinforcements
 - [x] T4 Room options + Noise (CMB-7, CMB-19): Clash, Margin Strike, Strike Out, Between the Lines, Spin a Tale
 - [x] T5 Entry points Margin / Gutter + Bleed-through (CMB-17/18); Exposed starts to trigger (CMB-15)
-- [ ] T6 Notice meter (CMB-23) + Rewrite (CMB-20)
+- [ ] T6 Notice meter (CMB-23) + Rewrite (CMB-20) — design approved (D-106, D-107), ready to code
 - [ ] T7 Unity: stage map + scene preview + deploy screens (placeholder)
 - [ ] T8 Unity: play the whole Seedbed; user play-check
 
