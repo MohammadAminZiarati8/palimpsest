@@ -129,4 +129,15 @@ public class NoticeRewriteTests
         Assert.Throws<ArgumentException>(() => r.Rewrite(RewriteUse.Silence)); // no Herald
         Assert.True(r.RewriteLeft);
     }
+
+    [Fact]
+    public void CanRewrite_MatchesRewrite_D107()
+    {
+        var r = Run(Scene(Alert.Watching, "C3"), Scene(Alert.Watching, "C1"));
+        Assert.True(r.CanRewrite(RewriteUse.Calm));
+        Assert.True(r.CanRewrite(RewriteUse.Silence));
+        Assert.True(r.CanRewrite(RewriteUse.Reveal));
+        r.Rewrite(RewriteUse.Silence);
+        Assert.False(r.CanRewrite(RewriteUse.Calm));   // charge spent
+    }
 }

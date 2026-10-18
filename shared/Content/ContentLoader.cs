@@ -60,6 +60,7 @@ namespace Game.Shared.Content
             CheckRange(stageFile.NoticePerRing, 0, 99, "stages: noticePerRing", errors);
             CheckRange(stageFile.NoticeWatchingAt, 1, 99, "stages: noticeWatchingAt", errors);
             CheckRange(stageFile.NoticePatrolAt, 1, 99, "stages: noticePatrolAt", errors);
+            CheckRange(stageFile.TwoStarsMaxDown, 1, 2, "stages: twoStarsMaxDown", errors);
             CheckRange(stageFile.NoticePatrol.InRounds, 1, 99, "stages: noticePatrol.inRounds", errors);
             if (!enemyFile.Enemies.Any(e => e.Id == stageFile.NoticePatrol.Enemy))
                 errors.Add($"stages: noticePatrol.enemy '{stageFile.NoticePatrol.Enemy}' is not an enemy");

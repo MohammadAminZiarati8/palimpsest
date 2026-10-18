@@ -1,5 +1,5 @@
 {
-  "_doc": "Campaign stages in play order (CMB-3..8, CMB-17, CMB-22, ENM-9). Lineups D-95. Door heal BAL-21, room option % BAL-22, Margin Strike BAL-23. Notice thresholds + patrol D-106. enemyLevel BAL-19. heroes = champions the story allows. Enemies Front first; arrivals join the end of the enemy line after inRounds; reinforcements = what a Herald's Ring writes in.",
+  "_doc": "Campaign stages in play order (CMB-3..8, CMB-17, CMB-22, ENM-9). Lineups D-95. Door heal BAL-21, room option % BAL-22, Margin Strike BAL-23. Notice thresholds + patrol D-106. Stars: 3 = nobody Down, 2 = up to twoStarsMaxDown Down, else 1 (D-109). enemyLevel BAL-19. heroes = champions the story allows. Enemies Front first; arrivals join the end of the enemy line after inRounds; reinforcements = what a Herald's Ring writes in.",
   "doorHealPercent": 15,
   "roomBasePercent": 50,
   "roomPerLevelPercent": 5,
@@ -12,6 +12,7 @@
   "noticeWatchingAt": 3,
   "noticePatrolAt": 5,
   "noticePatrol": { "enemy": "C2", "inRounds": 2 },
+  "twoStarsMaxDown": 1,
   "stages": [
     {
       "id": "P1", "name": "Prologue 1", "chapter": "Prologue", "enemyLevel": 1, "heroes": ["c01", "c02"],

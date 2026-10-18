@@ -90,6 +90,16 @@ namespace Game.Shared.Stages
         public bool IsOver => State == StageState.Cleared || State == StageState.Failed || State == StageState.Retreated;
         /// <summary>CMB-36: cleared with no hero Down at any point.</summary>
         public bool ThreeStars => State == StageState.Cleared && _team.All(h => !h.IsDown);
+        /// <summary>CMP-2 result (D-109): 0 = not cleared; 3 = nobody Down; 2 = up to twoStarsMaxDown Down; else 1.</summary>
+        public int Stars
+        {
+            get
+            {
+                if (State != StageState.Cleared) return 0;
+                int down = _team.Count(h => h.IsDown);
+                return down == 0 ? 3 : down <= _db.StageRules.TwoStarsMaxDown ? 2 : 1;
+            }
+        }
 
         /// <param name="team">CMB-2: 1–3 champions from the stage's allowed heroes, with level/rank.</param>
         public StageRun(ContentDb db, StageDef stage, IReadOnlyList<HeroEntry> team, ulong seed)
@@ -247,17 +257,21 @@ namespace Game.Shared.Stages
         {
             if (State != StageState.ChooseParty) throw new InvalidOperationException("Rewrite only before a scene");
             if (!RewriteLeft) throw new InvalidOperationException("Rewrite is spent for this stage");
-            bool ok = use switch
-            {
-                RewriteUse.Calm => SceneAlert == Alert.Watching,
-                RewriteUse.Silence => Scene.Enemies.Concat(Scene.Arrivals.Select(a => a.Enemy)).Any(IsHerald),
-                RewriteUse.Reveal => !Scene.MarginPath,
-                _ => false,
-            };
-            if (!ok) throw new ArgumentException($"Rewrite {use} does nothing in this scene");
+            if (!Helps(use)) throw new ArgumentException($"Rewrite {use} does nothing in this scene");
             _rewriteScene = SceneIndex;
             _rewriteUse = use;
         }
+
+        /// <summary>True if <see cref="Rewrite"/> with this use is possible now (for greying out buttons).</summary>
+        public bool CanRewrite(RewriteUse use) => State == StageState.ChooseParty && RewriteLeft && Helps(use);
+
+        private bool Helps(RewriteUse use) => use switch
+        {
+            RewriteUse.Calm => SceneAlert == Alert.Watching,
+            RewriteUse.Silence => Scene.Enemies.Concat(Scene.Arrivals.Select(a => a.Enemy)).Any(IsHerald),
+            RewriteUse.Reveal => !Scene.MarginPath,
+            _ => false,
+        };
 
         private bool IsHerald(string enemyId) =>
             _db.Enemy(enemyId).Skills.Any(s => s.Special?.Type == SpecialType.Ring);

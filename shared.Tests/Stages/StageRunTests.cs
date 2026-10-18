@@ -52,6 +52,7 @@ public class StageRunTests
         r.EndScene();
         Assert.Equal(StageState.Cleared, r.State);
         Assert.True(r.ThreeStars);
+        Assert.Equal(3, r.Stars);
     }
 
     [Fact]
@@ -100,6 +101,7 @@ public class StageRunTests
         r.EndScene();
         Assert.Equal(StageState.Cleared, r.State);
         Assert.False(r.ThreeStars);
+        Assert.Equal(2, r.Stars);          // one Down (D-109)
         Assert.Equal(0, r.Hero("c01").Hp); // Down heroes don't heal at the door
     }
 
@@ -111,6 +113,7 @@ public class StageRunTests
         r.EndScene();
         Assert.Equal(StageState.Failed, r.State);
         Assert.True(r.IsOver);
+        Assert.Equal(0, r.Stars);
     }
 
     [Fact]

@@ -30,6 +30,8 @@ namespace Game.Shared.Content
         /// <summary>D-106: at this Notice, every later scene gets <see cref="NoticePatrol"/> as an extra arrival.</summary>
         public int NoticePatrolAt { get; set; }
         public Arrival NoticePatrol { get; set; } = new Arrival();
+        /// <summary>CMP-2 placeholder (D-109): cleared with at most this many champions Down = 2 stars (0 Down = 3, CMB-36).</summary>
+        public int TwoStarsMaxDown { get; set; }
         public List<StageDef> Stages { get; set; } = new List<StageDef>();
     }
 
