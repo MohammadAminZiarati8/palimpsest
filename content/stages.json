@@ -10,7 +10,7 @@
   "noticePerFight": 1,
   "noticePerRing": 2,
   "noticeWatchingAt": 3,
-  "noticePatrolAt": 5,
+  "noticePatrolAt": 4,
   "noticePatrol": { "enemy": "C2", "inRounds": 2 },
   "twoStarsMaxDown": 1,
   "stages": [
@@ -54,7 +54,7 @@
       "scenes": [
         { "capacity": 2, "alert": "Reading", "enemies": ["C2", "C2"] },
         { "capacity": 3, "alert": "Watching", "enemies": ["C1", "C1", "C4"] },
-        { "capacity": 3, "alert": "Watching", "enemies": ["C1", "C3", "C4"], "reinforcements": ["C2"] }
+        { "capacity": 3, "alert": "Reading", "enemies": ["C1", "C3", "C4"], "reinforcements": ["C2"] }
       ]
     },
     {
@@ -62,7 +62,7 @@
       "scenes": [
         { "capacity": 3, "alert": "Reading", "marginPath": true, "enemies": ["C1", "C2", "C4"] },
         { "capacity": 2, "alert": "Watching", "enemies": ["C1", "C3"], "reinforcements": ["C2"] },
-        { "capacity": 3, "alert": "Watching", "enemies": ["C1", "C2", "C4"], "arrivals": [ { "enemy": "C1", "inRounds": 3 } ] }
+        { "capacity": 3, "alert": "Reading", "enemies": ["C1", "C2", "C4"], "arrivals": [ { "enemy": "C1", "inRounds": 3 } ] }
       ]
     },
     {
