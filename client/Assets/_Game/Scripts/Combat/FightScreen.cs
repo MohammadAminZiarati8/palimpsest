@@ -399,7 +399,7 @@ namespace Game.Combat
             {
                 int index = i;
                 var b = Ui.Button(root, $"Skill{i}", 22, () => OnSkill(index));
-                Ui.Place(Ui.Rect(b), 0.3f + i * 0.2f, 0.2f, 360, 110);
+                Ui.Place(Ui.Rect(b), 0.22f + i * 0.18f, 0.2f, 340, 110); // clear of the log (right)
                 _skillButtons.Add(b);
             }
             _shiftBack = Ui.Button(root, "ShiftBack", 24, () => HeroShift(+1), "< Shift back");
@@ -419,7 +419,7 @@ namespace Game.Combat
             Ui.Place(Ui.Rect(_retreat), 0.94f, 0.95f, 160, 60);
 
             _logText = Ui.Label(root, "Log", 20, TextAnchor.LowerLeft);
-            Ui.Place(_logText.rectTransform, 0.83f, 0.17f, 620, 280);
+            Ui.Place(_logText.rectTransform, 0.855f, 0.17f, 520, 280);
 
             // Win / lose panel (on top of the row).
             var result = Ui.Panel(root, "Result", new Color(0, 0, 0, 0.8f));
