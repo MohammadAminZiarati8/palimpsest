@@ -1,8 +1,8 @@
 {
   "_doc": "Censors (ENM-15, gdd/10-enemies.md). Tier values BAL-16 (speed has no High), growth BAL-17 (linear like BAL-8, D-81), Elite multipliers, crit defaults D-76 (override per enemy with critChance/critDamage). Kits BAL-18, AI conditions CMB-41. C3 Herald Ring countdown = special rounds (ENM-9; effect lands in M2b-T3).",
   "tiers": {
-    "hp":      { "low": 250, "medium": 400, "high": 600 },
-    "attack":  { "low": 70,  "medium": 100, "high": 130 },
+    "hp":      { "low": 325, "medium": 520, "high": 780 },
+    "attack":  { "low": 90,  "medium": 130, "high": 170 },
     "defense": { "low": 20,  "medium": 35,  "high": 50 },
     "speed":   { "low": 92,  "medium": 99 }
   },

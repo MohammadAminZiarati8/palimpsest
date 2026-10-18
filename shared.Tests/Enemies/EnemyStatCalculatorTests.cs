@@ -10,12 +10,12 @@ public class EnemyStatCalculatorTests
 
     // BAL-16 tiers x BAL-17 linear growth (+9%/level, D-81) x Elite HP x3 / Atk x1.5; Speed fixed.
     [Theory]
-    [InlineData("C2", 1, 250, 100, 20, 99)]
-    [InlineData("C2", 4, 318, 127, 25, 99)]   // 250x1.27=317.5 · 20x1.27=25.4
-    [InlineData("C1", 1, 600, 100, 35, 92)]
-    [InlineData("C4", 14, 868, 152, 76, 99)]  // x2.17: 70 -> 151.9 · 35 -> 75.95
-    [InlineData("C5", 1, 1800, 195, 35, 99)]
-    [InlineData("C5", 10, 3258, 353, 63, 99)] // 600x1.81x3 · 130x1.81x1.5=352.95 · 35x1.81=63.35
+    [InlineData("C2", 1, 325, 130, 20, 99)]
+    [InlineData("C2", 4, 413, 165, 25, 99)]   // 325x1.27=412.75 · 130x1.27=165.1 · 20x1.27=25.4
+    [InlineData("C1", 1, 780, 130, 35, 92)]
+    [InlineData("C4", 14, 1128, 195, 76, 99)] // x2.17: 520 -> 1128.4 · 90 -> 195.3 · 35 -> 75.95
+    [InlineData("C5", 1, 2340, 255, 35, 99)]
+    [InlineData("C5", 10, 4235, 462, 63, 99)] // 780x1.81x3=4235.4 · 170x1.81x1.5=461.55 · 35x1.81=63.35
     public void At_MatchesBal16And17(string id, int level, int hp, int atk, int def, int spd)
     {
         var s = At(id, level);

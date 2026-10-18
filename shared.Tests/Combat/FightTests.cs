@@ -29,7 +29,7 @@ public class FightTests
         });
         var expect = StatCalculator.At(TestContent.Db, TestContent.Db.Champion("c01"), 5, 2);
         Assert.Equal(expect.Hp, f.Line(Side.Heroes)[0].Hp);
-        Assert.Equal(318, f.Line(Side.Enemies)[0].MaxHp); // BAL-17 table
+        Assert.Equal(413, f.Line(Side.Enemies)[0].MaxHp); // BAL-17 table
         Assert.NotEmpty(f.Line(Side.Heroes)[0].Skills);
     }
 

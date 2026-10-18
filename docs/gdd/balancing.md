@@ -83,12 +83,12 @@
 | White Snake | Jade Needle 80% + Attack down 1 | Herbal Remedy: heal all 20% of her max HP + cleanse 1 debuff each | Coiled Guard: Ward 15% of her max HP on all + Defense up 2 |
 
 ## Demo — Censors (10-enemies.md, D-61)
-- **BAL-16** Tier → Lv1 value:
+- **BAL-16** Tier → Lv1 value (HP/Atk +30% after the M2b-T8 play-check, D-116):
   | Tier | HP | Atk | Def | Spd |
   |---|---|---|---|---|
-  | ▼ | 250 | 70 | 20 | 92 |
-  | ● | 400 | 100 | 35 | 99 |
-  | ▲ | 600 | 130 | 50 | — |
+  | ▼ | 325 | 90 | 20 | 92 |
+  | ● | 520 | 130 | 35 | 99 |
+  | ▲ | 780 | 170 | 50 | — |
 - **BAL-17** Enemy growth +9% HP/Atk/Def per level, linear like BAL-8 (D-81). Elite: extra HP ×3, Atk ×1.5. Evasion 0 in the demo. All enemies Crit Chance 5%, Crit Damage +50% (per-enemy override in content, D-76).
 - **BAL-18** Kits:
   | Censor | Skills |
