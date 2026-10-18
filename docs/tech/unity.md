@@ -35,4 +35,5 @@ client/Assets/_Game/
 ## Status
 M0-5: `client/` created, packages resolve, asmdefs compile, Android setup applied (batch: `unity run client -- -executeMethod Game.Editor.ProjectSetup.Apply`). No scenes/code yet. M0-6: shared DLL + content copy verified (Unity compiles code using `Game.Shared`).
 M2a-T7: menu *Game/Test Fight* creates/opens `Scenes/TestFight.unity` with `Game.Combat.FightScreen` (uGUI built from code, placeholder boxes; heroes/enemies/seed on the Fight object).
+M2b-T7: menu *Game/Play Stages* creates/opens `Scenes/Stages.unity` with `Game.Combat.StageScreen` (stage list → scene preview + deploy → `FightScreen` stage mode → after-scene panel). Shared placeholder uGUI helpers: `Game.Combat.Ui`. Progress = PlayerPrefs (`StageProgress`, D-110).
 M2a-T8: the screen opens on a Seedbed 1–6 test-fight picker (`TestFights.cs`), shows floating HP numbers (PrimeTween `Tween.Custom`) and a win/lose panel.
