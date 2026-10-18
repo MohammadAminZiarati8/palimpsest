@@ -142,9 +142,12 @@ namespace Game.Combat
         {
             var next = _fight.Next();
             Refresh();
-            if (next == null) return;
+            if (next == null || RoomEmpty) return; // D-114: wait for Join / Retreat, don't burn rounds
             if (next.Side == Side.Enemies || next.Has(StatusEffect.Stun)) StartCoroutine(AutoTurn(next));
         }
+
+        /// <summary>D-114: every hero in the room is Down or fell back, but someone can still Join (CMB-10).</summary>
+        private bool RoomEmpty => !_fight.IsOver && _fight.Line(Side.Heroes).Count == 0 && _fight.Bench.Count > 0;
 
         private IEnumerator AutoTurn(FightUnit unit)
         {
@@ -193,7 +196,7 @@ namespace Game.Combat
             if (_busy || _fight.IsOver) return;
             try { Log($"{_fight.Join(championId).Name} joins at the Main Door"); }
             catch (Exception e) { Log(e.Message); }
-            Refresh();
+            Advance(); // resumes enemy turns if the room was empty (D-114)
         }
 
         /// <summary>One turn, then a floating number for every HP change (hits, heals, Bleed).</summary>
@@ -308,7 +311,8 @@ namespace Game.Combat
             _header.text = _fight.IsOver
                 ? $"{_fight.Outcome}{(_fight.LossReason != LossReason.None ? $" ({_fight.LossReason})" : "")} - round {_fight.Round}"
                 : $"{(_fight.InOpening ? "Opening" : $"Round {_fight.Round}/{_fight.RoundCap}")} · {(next != null ? next.Name : "")}'s turn{incoming}";
-            _hint.text = _fight.IsOver ? "" : hero == null ? "Enemy turn..." : _picked == null ? "Pick a skill" : "Pick a green target";
+            _hint.text = _fight.IsOver ? "" : RoomEmpty ? "Everyone in the room is Down: Join from the door, or Retreat"
+                : hero == null ? "Enemy turn..." : _picked == null ? "Pick a skill" : "Pick a green target";
             _result.SetActive(_fight.IsOver);
             if (_fight.IsOver)
                 _resultText.text = _fight.Outcome == FightOutcome.Won
@@ -356,7 +360,7 @@ namespace Game.Combat
 
         private void LogAction(FightUnit u, SkillDef? skill, IReadOnlyList<Hit> hits)
         {
-            if (skill == null) { Log($"{u.Name} has no target"); return; }
+            if (skill == null) { Log(u.Skills.Any(u.CanUse) ? $"{u.Name} has no target" : $"{u.Name} waits"); return; } // e.g. a Herald that already rang
             foreach (var h in hits) if (h.Crit) _crits.Add(h.Target);
             var text = hits.Count == 0 ? "" : ": " + string.Join(", ",
                 hits.Select(h => $"{h.Target.Name} -{h.HpLost}{(h.Amount > h.HpLost && !h.Target.IsDown ? $" ({h.Amount - h.HpLost} blocked)" : "")}" +
@@ -399,7 +403,7 @@ namespace Game.Combat
             for (int i = 0; i < 3; i++)
             {
                 int index = i;
-                var b = Ui.Button(root, $"Skill{i}", 22, () => OnSkill(index));
+                var b = Ui.Button(root, $"Skill{i}", 20, () => OnSkill(index));
                 Ui.Place(Ui.Rect(b), 0.22f + i * 0.18f, 0.2f, 340, 110); // clear of the log (right)
                 _skillButtons.Add(b);
             }
