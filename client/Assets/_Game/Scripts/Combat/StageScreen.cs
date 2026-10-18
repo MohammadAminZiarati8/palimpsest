@@ -206,7 +206,7 @@ namespace Game.Combat
                     SetAfter("Stages", ShowList, "Retry", () => StartStage(_stageIndex));
                     break;
             }
-            sb.Append("<size=26>HP carries to the next scene (CMB-33):</size>");
+            sb.Append(_run.State == StageState.ChooseParty ? "<size=26>HP carries to the next scene (CMB-33):</size>" : "<size=26>Team HP:</size>");
             foreach (var h in _run.Team)
                 sb.Append($"\n<size=26>{_db.Champion(h.Id).Name}  {h.Hp}/{h.MaxHp}{(h.IsDown ? "  <color=#ff8080>DOWN</color>" : "")}</size>");
             _afterText.text = sb.ToString();
@@ -493,7 +493,7 @@ namespace Game.Combat
             var blocker = Ui.Panel(root, "AfterScene", new Color(0, 0, 0, 0.55f)); // blocks clicks on the scene behind
             Ui.Stretch(blocker.rectTransform, 0, 0, 1, 1);
             _after = blocker.gameObject;
-            var after = Ui.Panel(blocker.rectTransform, "Box", new Color(0, 0, 0, 0.9f));
+            var after = Ui.Panel(blocker.rectTransform, "Box", new Color(0.06f, 0.06f, 0.06f)); // solid (Linear colour space)
             Ui.Place(after.rectTransform, 0.5f, 0.5f, 900, 600);
             _afterText = Ui.Label(after.rectTransform, "Text", 44, TextAnchor.UpperCenter);
             Ui.Stretch(_afterText.rectTransform, 0.05f, 0.25f, 0.95f, 0.95f);

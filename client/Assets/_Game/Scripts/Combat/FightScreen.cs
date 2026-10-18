@@ -332,7 +332,7 @@ namespace Game.Combat
             sb.Append($"<b>{u.Name}</b> {(u.Facing > 0 ? ">>" : "<<")}");
             if (u.Spot == Spot.Behind) sb.Append(u.Side == Side.Heroes ? "\n<color=#9fe8ff>Margin flanker</color>" : "\n<color=#ffb0b0>Bleed-through</color>");
             else if (u.Spot == Spot.Gutter) sb.Append("\n<color=#ffb0b0>Gutter</color>");
-            sb.Append($"\nHP {u.Hp}/{u.MaxHp}\nAtk {u.Attack} Def {u.Defense} Spd {u.Speed}");
+            sb.Append($"\nHP {u.Hp}/{u.MaxHp}\n<size=19>Atk {u.Attack} Def {u.Defense} Spd {u.Speed}</size>"); // one line in the 250 box
             foreach (var e in u.Effects)
                 sb.Append($"\n{e.Type} {e.Rounds}{(e.Type == StatusEffect.Ward ? $" ({e.Amount})" : "")}");
             if (u.IsFaded) sb.Append("\nFaded");
@@ -359,7 +359,8 @@ namespace Game.Combat
             if (skill == null) { Log($"{u.Name} has no target"); return; }
             foreach (var h in hits) if (h.Crit) _crits.Add(h.Target);
             var text = hits.Count == 0 ? "" : ": " + string.Join(", ",
-                hits.Select(h => $"{h.Target.Name} -{h.HpLost}{(h.Crit ? " CRIT" : "")}{(h.Target.IsDown ? " DOWN" : "")}"));
+                hits.Select(h => $"{h.Target.Name} -{h.HpLost}{(h.Amount > h.HpLost && !h.Target.IsDown ? $" ({h.Amount - h.HpLost} blocked)" : "")}" +
+                                 $"{(h.Crit ? " CRIT" : "")}{(h.Target.IsDown ? " DOWN" : "")}"));
             Log($"{u.Name} uses {skill.Name}{text}");
         }
 
@@ -422,7 +423,7 @@ namespace Game.Combat
             Ui.Place(_logText.rectTransform, 0.855f, 0.17f, 520, 280);
 
             // Win / lose panel (on top of the row).
-            var result = Ui.Panel(root, "Result", new Color(0, 0, 0, 0.8f));
+            var result = Ui.Panel(root, "Result", new Color(0.06f, 0.06f, 0.06f)); // solid: Linear colour space makes 80% alpha look ~half see-through
             Ui.Place(result.rectTransform, 0.5f, 0.55f, 760, 420);
             _result = result.gameObject;
             _resultText = Ui.Label(result.rectTransform, "Text", 64, TextAnchor.MiddleCenter);
