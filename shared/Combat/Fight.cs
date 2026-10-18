@@ -59,6 +59,8 @@ namespace Game.Shared.Combat
         public int OpeningEnemyIndex { get; set; } = -1;
         /// <summary>BAL-23 Margin Strike: crit chance added to hero hits in the opening.</summary>
         public int OpeningCritBonus { get; set; }
+        /// <summary>D-107 Rewrite Silence: no Herald in this fight rings (ENM-9).</summary>
+        public bool SilenceHeralds { get; set; }
         /// <summary>Battle seed from the server (A3).</summary>
         public ulong Seed { get; set; }
     }
@@ -106,6 +108,7 @@ namespace Game.Shared.Combat
         private Side? _opening;
         private FightUnit? _openingOnly;
         private readonly int _openingCrit;
+        private readonly bool _silenced;
         /// <summary>True during the room-option opening (Round 0).</summary>
         public bool InOpening { get; private set; }
         private readonly Dictionary<FightUnit, Intent> _intents = new Dictionary<FightUnit, Intent>();
@@ -140,6 +143,7 @@ namespace Game.Shared.Combat
             if (setup.HeroCapacity < setup.Heroes.Count || setup.HeroCapacity > MaxSlots)
                 throw new ArgumentException($"HeroCapacity {setup.HeroCapacity} must fit the heroes and be <= {MaxSlots}");
             _heroCapacity = setup.HeroCapacity;
+            _silenced = setup.SilenceHeralds;
             _bench = setup.Bench.ToList();
             _reinforcements = setup.Reinforcements.ToList();
             foreach (var a in setup.Arrivals)
@@ -245,7 +249,7 @@ namespace Game.Shared.Combat
             var unit = Add(Side.Enemies, def.Id, def.Name, EnemyStatCalculator.At(Db, def, e.Level), def.Skills);
             unit.Level = e.Level;
             var ring = def.Skills.FirstOrDefault(s => s.Special?.Type == SpecialType.Ring);
-            if (ring != null) unit.RingIn = ring.Special!.Rounds;
+            if (ring != null && !_silenced) unit.RingIn = ring.Special!.Rounds;
             return unit;
         }
 

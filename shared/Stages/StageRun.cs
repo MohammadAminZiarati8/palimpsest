@@ -10,6 +10,9 @@ namespace Game.Shared.Stages
 {
     public enum StageState { ChooseParty, Fighting, Cleared, Failed, Retreated }
 
+    /// <summary>CMB-20 Rewrite uses (D-107), spent on the scene about to start.</summary>
+    public enum RewriteUse { Calm, Silence, Reveal }
+
     /// <summary>Room options (02-combat.md room table).</summary>
     public enum RoomOption { Clash, MarginStrike, StrikeOut, BetweenTheLines, SpinATale }
 
@@ -62,6 +65,25 @@ namespace Game.Shared.Stages
         /// <summary>0-based index of the current scene.</summary>
         public int SceneIndex { get; private set; }
         public SceneDef Scene => Stage.Scenes[SceneIndex];
+        /// <summary>CMB-23 stage-wide Notice meter (D-106, D-108).</summary>
+        public int Notice { get; private set; }
+        /// <summary>CMB-20: the stage's one Rewrite charge is still unused (D-107).</summary>
+        public bool RewriteLeft => _rewriteScene < 0;
+        /// <summary>Rewrite spent on the current scene, if any.</summary>
+        public RewriteUse? SceneRewrite => _rewriteScene == SceneIndex ? _rewriteUse : (RewriteUse?)null;
+        /// <summary>
+        /// The current scene's alert: Calm = Reading; else Notice at noticeWatchingAt turns Reading to Watching (D-106).
+        /// </summary>
+        public Alert SceneAlert =>
+            SceneRewrite == RewriteUse.Calm ? Alert.Reading
+            : Scene.Alert == Alert.Reading && Notice >= _db.StageRules.NoticeWatchingAt ? Alert.Watching
+            : Scene.Alert;
+        /// <summary>CMB-17 Margin Path: from content or revealed by Rewrite (D-107).</summary>
+        public bool SceneMarginPath => Scene.MarginPath || SceneRewrite == RewriteUse.Reveal;
+        /// <summary>D-106: Notice at noticePatrolAt adds the patrol to the scene's arrivals.</summary>
+        public bool ScenePatrol => Notice >= _db.StageRules.NoticePatrolAt;
+        private int _rewriteScene = -1;
+        private RewriteUse _rewriteUse;
         public IReadOnlyList<StageHero> Team => _team;
         /// <summary>The fight of the current scene while <see cref="StageState.Fighting"/>.</summary>
         public Fight? Fight { get; private set; }
@@ -103,7 +125,7 @@ namespace Game.Shared.Stages
         public IReadOnlyList<RoomOption> Allowed(IReadOnlyList<string> party)
         {
             var list = new List<RoomOption> { RoomOption.Clash };
-            bool reading = Scene.Alert == Alert.Reading;
+            bool reading = SceneAlert == Alert.Reading;
             if (reading && party.Count <= 2) list.Add(RoomOption.MarginStrike);
             if (reading && party.Count == 1 && ClassOf(party[0]) == HeroClass.Assassin) list.Add(RoomOption.StrikeOut);
             if (reading && party.Count == 1) list.Add(RoomOption.BetweenTheLines);
@@ -146,7 +168,7 @@ namespace Game.Shared.Stages
             var party = partyFrontFirst.Select(id => _team.FirstOrDefault(h => h.Id == id)
                 ?? throw new ArgumentException($"{id} is not in the team")).ToList();
             if (party.Any(h => h.IsDown)) throw new ArgumentException("Down champions can't enter (CMB-34)");
-            if (marginHero != null && (!Scene.MarginPath || !partyFrontFirst.Contains(marginHero)))
+            if (marginHero != null && (!SceneMarginPath || !partyFrontFirst.Contains(marginHero)))
                 throw new ArgumentException($"{marginHero} can't take the Margin: needs a Margin Path and a party member (CMB-17)");
             if (!Allowed(partyFrontFirst).Contains(option))
                 throw new ArgumentException($"{option} isn't allowed here with {party.Count} champion(s) (CMB-7)");
@@ -184,8 +206,16 @@ namespace Game.Shared.Stages
                     break;
             }
 
+            var arrivals = Scene.Arrivals.Select(a => new ArrivalEntry
+                { EnemyId = a.Enemy, Level = Stage.EnemyLevel, InRounds = a.InRounds }).ToList();
+            var patrol = _db.StageRules.NoticePatrol;
+            if (ScenePatrol)
+                arrivals.Add(new ArrivalEntry { EnemyId = patrol.Enemy, Level = Stage.EnemyLevel, InRounds = patrol.InRounds });
+            Notice += _db.StageRules.NoticePerFight; // a fight starts: Clash or failed stealth (D-108)
+
             Fight = new Fight(_db, new FightSetup
             {
+                SilenceHeralds = SceneRewrite == RewriteUse.Silence,
                 Opening = opening,
                 OpeningEnemyIndex = openingIndex,
                 OpeningCritBonus = crit,
@@ -198,8 +228,7 @@ namespace Game.Shared.Stages
                 Bench = _team.Where(h => !h.IsDown && !party.Contains(h))
                     .Select(h => new HeroEntry { ChampionId = h.Id, Level = h.Level, Rank = h.Rank, Hp = h.Hp }).ToList(),
                 HeroCapacity = Scene.Capacity,
-                Arrivals = Scene.Arrivals.Select(a => new ArrivalEntry
-                    { EnemyId = a.Enemy, Level = Stage.EnemyLevel, InRounds = a.InRounds }).ToList(),
+                Arrivals = arrivals,
                 Reinforcements = Scene.Reinforcements.Select(id => new EnemyEntry { EnemyId = id, Level = Stage.EnemyLevel }).ToList(),
                 Seed = _seeds.NextULong(),
             });
@@ -209,6 +238,29 @@ namespace Game.Shared.Stages
         }
 
         private HeroClass ClassOf(string id) => _db.Champion(id).Class;
+
+        /// <summary>
+        /// CMB-20 Rewrite (D-107): spends the stage's one charge on the scene about to start. Calm needs a
+        /// Watching scene, Silence a Herald in the scene, Reveal a scene without a Margin Path.
+        /// </summary>
+        public void Rewrite(RewriteUse use)
+        {
+            if (State != StageState.ChooseParty) throw new InvalidOperationException("Rewrite only before a scene");
+            if (!RewriteLeft) throw new InvalidOperationException("Rewrite is spent for this stage");
+            bool ok = use switch
+            {
+                RewriteUse.Calm => SceneAlert == Alert.Watching,
+                RewriteUse.Silence => Scene.Enemies.Concat(Scene.Arrivals.Select(a => a.Enemy)).Any(IsHerald),
+                RewriteUse.Reveal => !Scene.MarginPath,
+                _ => false,
+            };
+            if (!ok) throw new ArgumentException($"Rewrite {use} does nothing in this scene");
+            _rewriteScene = SceneIndex;
+            _rewriteUse = use;
+        }
+
+        private bool IsHerald(string enemyId) =>
+            _db.Enemy(enemyId).Skills.Any(s => s.Special?.Type == SpecialType.Ring);
 
         /// <summary>Scene passed without a fight (stealth success).</summary>
         private void PassScene()
@@ -228,6 +280,7 @@ namespace Game.Shared.Stages
             // CMB-33: HP carries. Joined units and fall-backs both count; a unit's last state wins.
             foreach (var u in Fight.Units.Where(u => u.Side == Side.Heroes))
                 Hero(u.DefId).Hp = u.Hp;
+            Notice += Fight.Rings * _db.StageRules.NoticePerRing; // Herald alarm (CMB-23)
 
             if (Fight.Outcome != FightOutcome.Won || _team.All(h => h.IsDown)) State = StageState.Failed;
             else if (SceneIndex + 1 >= Stage.Scenes.Count) State = StageState.Cleared;

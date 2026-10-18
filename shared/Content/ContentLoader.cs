@@ -56,6 +56,13 @@ namespace Game.Shared.Content
             CheckRange(stageFile.RoomMaxPercent, stageFile.RoomMinPercent, 100, "stages: roomMaxPercent", errors);
             CheckRange(stageFile.RoomBasePercent, 0, 100, "stages: roomBasePercent", errors);
             CheckRange(stageFile.MarginStrikeCritPercent, 0, 100, "stages: marginStrikeCritPercent", errors);
+            CheckRange(stageFile.NoticePerFight, 0, 99, "stages: noticePerFight", errors);
+            CheckRange(stageFile.NoticePerRing, 0, 99, "stages: noticePerRing", errors);
+            CheckRange(stageFile.NoticeWatchingAt, 1, 99, "stages: noticeWatchingAt", errors);
+            CheckRange(stageFile.NoticePatrolAt, 1, 99, "stages: noticePatrolAt", errors);
+            CheckRange(stageFile.NoticePatrol.InRounds, 1, 99, "stages: noticePatrol.inRounds", errors);
+            if (!enemyFile.Enemies.Any(e => e.Id == stageFile.NoticePatrol.Enemy))
+                errors.Add($"stages: noticePatrol.enemy '{stageFile.NoticePatrol.Enemy}' is not an enemy");
             if (errors.Count > 0)
                 throw new ContentException("Invalid content:\n- " + string.Join("\n- ", errors));
 

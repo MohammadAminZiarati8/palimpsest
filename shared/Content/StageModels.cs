@@ -22,6 +22,14 @@ namespace Game.Shared.Content
         public int RoomMaxPercent { get; set; }
         /// <summary>BAL-23.</summary>
         public int MarginStrikeCritPercent { get; set; }
+        /// <summary>CMB-23 Notice added per scene fought (Clash or failed stealth, D-108) and per Herald ring.</summary>
+        public int NoticePerFight { get; set; }
+        public int NoticePerRing { get; set; }
+        /// <summary>D-106 Notice (CMB-23): at this Notice, scenes that would start Reading start Watching.</summary>
+        public int NoticeWatchingAt { get; set; }
+        /// <summary>D-106: at this Notice, every later scene gets <see cref="NoticePatrol"/> as an extra arrival.</summary>
+        public int NoticePatrolAt { get; set; }
+        public Arrival NoticePatrol { get; set; } = new Arrival();
         public List<StageDef> Stages { get; set; } = new List<StageDef>();
     }
 

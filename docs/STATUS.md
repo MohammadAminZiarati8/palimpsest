@@ -1,7 +1,7 @@
 # STATUS
 > Read every session. Keep under ~40 lines. Detailed history = git log.
 
-**Phase:** M2a Combat (single fight) · **Next:** M2b-T6 Notice meter + Rewrite · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
+**Phase:** M2a Combat (single fight) · **Next:** M2b-T7 Unity stage map + scene preview + deploy · user installs Docker Desktop (then run DB test) · art: first hero parts-sheet test (ART-7)
 
 ## Done (details: git log, `decisions.md`)
 - GDD for demo (universe, combat v2, enemies, story, demo scope, 4 champions, BAL-1..20); stack D-62..66; art D-68..70
@@ -28,13 +28,13 @@ Rules: CMB-3..10, 17..23, 33..36 · BAL-21..24 (D-91..94). Code in `shared/Stage
 - [x] T3 Join / Fall back (CMB-10), nearby arrivals (CMB-22), Herald reinforcements
 - [x] T4 Room options + Noise (CMB-7, CMB-19): Clash, Margin Strike, Strike Out, Between the Lines, Spin a Tale
 - [x] T5 Entry points Margin / Gutter + Bleed-through (CMB-17/18); Exposed starts to trigger (CMB-15)
-- [ ] T6 Notice meter (CMB-23) + Rewrite (CMB-20) — design approved (D-106, D-107), ready to code
+- [x] T6 Notice meter (CMB-23) + Rewrite (CMB-20)
 - [ ] T7 Unity: stage map + scene preview + deploy screens (placeholder)
 - [ ] T8 Unity: play the whole Seedbed; user play-check
 
 ## Last session
-- 2026-10-17: M2a done; M2b-T0..T4 done (stages.json, StageRun, Join/arrivals/Herald, room options + opening; D-91..99). 187 tests.
-- M2b-T5: `Fight` is one row (`Row`, `FightUnit.Pos/Spot/Facing`); Margin/Gutter/Bleed-through (`HeroEntry/EnemyEntry.Spot`), melee both sides, Exposed live, flankers walk back; `StageRun.Enter(..., marginHero)`. D-100..105. 202 tests.
-- FightScreen still shows only 3 slots per side (a flanker shows in a hero slot); real row view comes with T7.
-- Next: M2b-T6 Notice meter (CMB-23) + Rewrite (CMB-20).
+- 2026-10-18: M2b-T5 row + entry points (D-100..105). M2b-T6: `StageRun.Notice` (+1 per fight, +2 per ring), `SceneAlert` (Notice 3+ = Reading starts Watching), `ScenePatrol` (5+ = C2 in 2 rounds), `Rewrite(Calm/Silence/Reveal)` once per stage; numbers in stages.json (D-106..108). 210 tests.
+- Finding: in demo content Reading scenes are always scene 1, so Notice 3+/5+ never bites yet; tune in T8 play-check if wanted.
+- FightScreen shows 3 slots per side (a Margin flanker shows in a hero slot); real row view comes with T7.
+- Next: M2b-T7 Unity stage map + scene preview + deploy (Unity Editor/MCP allowed by user).
 - User: one question at a time, plain words, small demo, free maintained packages, state Claude usage cost before heavy tools.
