@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,18 +9,17 @@ using Game.Shared.Combat;
 using Game.Shared.Content;
 using PrimeTween;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 namespace Game.Combat
 {
     /// <summary>
     /// M2a-T7/T8 placeholder fight screen: builds its own uGUI from code, plays the shared sim.
-    /// T8: Seedbed 1–6 test-fight picker (<see cref="TestFight"/>), floating damage/heal numbers
-    /// (PrimeTween), win/lose panel.
-    /// Row (CMB-11): ours [Back][Middle][Front] vs [Front][Middle][Back] enemies. Heroes: pick a skill,
-    /// then a target box (Self/AllAllies skills fire at once); Shift via the arrow buttons (CMB-16).
+    /// Test mode: Seedbed 1–6 test-fight picker (<see cref="TestFight"/>, D-88). Stage mode (M2b-T7):
+    /// <see cref="PlayStage"/> plays a scene's fight from <c>StageRun</c> with Join / Fall back (CMB-10) and Retreat (CMB-35).
+    /// Row view (D-105): one box per unit in <see cref="Fight.Row"/> order, left (our Main Door) to right, so a
+    /// Margin flanker shows behind the enemy Back (CMB-17). Heroes: pick a skill, then a target box
+    /// (Self/AllAllies skills fire at once); Shift via the arrow buttons (CMB-16).
     /// Enemies play their intent (CMB-41) after a short delay. Real art: DEMO-12.
     /// </summary>
     public sealed class FightScreen : MonoBehaviour
@@ -27,44 +27,80 @@ namespace Game.Combat
         [SerializeField] private ulong seed = 1;
         [SerializeField] private float enemyDelay = 0.7f;
 
-        private static readonly Color HeroColor = new Color(0.25f, 0.45f, 0.8f);
-        private static readonly Color EnemyColor = new Color(0.75f, 0.3f, 0.3f);
-        private static readonly Color EmptyColor = new Color(1f, 1f, 1f, 0.06f);
-        private static readonly Color ActiveColor = new Color(1f, 0.85f, 0.2f);
-        private static readonly Color TargetColor = new Color(0.3f, 1f, 0.4f);
+        private const int MaxBoxes = Fight.MaxSlots * 2;
 
         private ContentDb _db = null!;
         private Fight _fight = null!;
-        private Font _font = null!;
         private readonly List<Slot> _slots = new List<Slot>();
         private readonly List<Button> _skillButtons = new List<Button>();
+        private readonly List<Button> _joinButtons = new List<Button>();
         private readonly Queue<string> _log = new Queue<string>();
         private Text _header = null!, _logText = null!, _hint = null!;
-        private Button _shiftBack = null!, _shiftFront = null!;
+        private Button _shiftBack = null!, _shiftFront = null!, _fallBack = null!, _retreat = null!;
         private RectTransform _root = null!;
-        private GameObject _picker = null!, _result = null!;
+        private GameObject _picker = null!, _result = null!, _testButtons = null!, _stageButtons = null!;
         private Text _resultText = null!;
         private TestFight _setup = TestFight.Seedbed[0];
         private readonly HashSet<FightUnit> _crits = new HashSet<FightUnit>();
         private SkillDef? _picked;
         private bool _busy;
 
+        // Stage mode (M2b-T7)
+        private bool _stageMode;
+        private string _title = "";
+        private int _capacity = Fight.MaxSlots;
+        private Action? _onDone, _onRetreat;
+
         private sealed class Slot
         {
-            public Side Side;
-            public int Line;
             public Image Box = null!;
             public Outline Border = null!;
             public Text Label = null!;
             public FightUnit? Unit;
         }
 
-        private void Awake()
+        private void Awake() => BuildUi();
+
+        private void Start()
         {
+            if (_stageMode) return;
             _db = ContentLoader.Load(new ResourcesContentSource());
-            _font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            BuildUi();
             ShowPicker(true);
+        }
+
+        /// <summary>
+        /// Stage mode: plays this scene's fight. <paramref name="onDone"/> runs from the result panel once the
+        /// fight is over; <paramref name="onRetreat"/> from the Retreat button (any time, CMB-35).
+        /// </summary>
+        public void PlayStage(Fight fight, string title, int capacity, Action onDone, Action onRetreat)
+        {
+            StopAllCoroutines();
+            _stageMode = true;
+            _db = fight.Db;
+            _fight = fight;
+            _title = title;
+            _capacity = capacity;
+            _onDone = onDone;
+            _onRetreat = onRetreat;
+            _root.gameObject.SetActive(true);
+            _picker.SetActive(false);
+            _result.SetActive(false);
+            _testButtons.SetActive(false);
+            _stageButtons.SetActive(true);
+            Begin(title);
+        }
+
+        /// <summary>Call right after AddComponent: no test picker, hidden until <see cref="PlayStage"/>.</summary>
+        public void UseForStages()
+        {
+            _stageMode = true;
+            Hide();
+        }
+
+        public void Hide()
+        {
+            StopAllCoroutines();
+            _root.gameObject.SetActive(false);
         }
 
         private void ShowPicker(bool show)
@@ -72,6 +108,8 @@ namespace Game.Combat
             StopAllCoroutines();
             _picker.SetActive(show);
             _result.SetActive(false);
+            _testButtons.SetActive(true);
+            _stageButtons.SetActive(false);
             if (!show) NewFight();
         }
 
@@ -79,7 +117,6 @@ namespace Game.Combat
 
         private void NewFight()
         {
-            StopAllCoroutines();
             _fight = new Fight(_db, new FightSetup
             {
                 Heroes = _setup.Heroes.Select(id => new HeroEntry
@@ -87,10 +124,16 @@ namespace Game.Combat
                 Enemies = _setup.Enemies.Select(id => new EnemyEntry { EnemyId = id, Level = _setup.EnemyLevel }).ToList(),
                 Seed = seed,
             });
+            _title = _setup.Name;
+            Begin($"{_setup.Name}: heroes Lv{_setup.HeroLevel} R{_setup.HeroRank} vs enemies Lv{_setup.EnemyLevel} (seed {seed})");
+        }
+
+        private void Begin(string firstLine)
+        {
             _log.Clear();
             _picked = null;
             _busy = false;
-            Log($"{_setup.Name}: heroes Lv{_setup.HeroLevel} R{_setup.HeroRank} vs enemies Lv{_setup.EnemyLevel} (seed {seed})");
+            Log(firstLine);
             Advance();
         }
 
@@ -123,7 +166,6 @@ namespace Game.Combat
         {
             var skill = _picked!;
             _picked = null;
-            var actor = _fight.Next()!;
             Play((f, u) => LogAction(u, skill, f.UseSkill(u, skill, target)));
             Advance();
         }
@@ -131,11 +173,27 @@ namespace Game.Combat
         private void HeroShift(int direction)
         {
             var actor = _fight.Next()!;
-            var line = _fight.Line(Side.Heroes);
-            var ally = line[actor.Line + direction];
+            var ally = _fight.Line(Side.Heroes)[actor.Line + direction];
             _picked = null;
             Play((f, u) => { f.Shift(u, ally); Log($"{u.Name} shifts with {ally.Name}"); });
             Advance();
+        }
+
+        /// <summary>CMB-10 Fall back: the acting champion goes to the door, keeping its HP (costs its turn).</summary>
+        private void HeroFallBack()
+        {
+            _picked = null;
+            Play((f, u) => { f.FallBack(u); Log($"{u.Name} falls back to the door"); });
+            Advance();
+        }
+
+        /// <summary>CMB-10 Join: free, between turns; acts from next round.</summary>
+        private void HeroJoin(string championId)
+        {
+            if (_busy || _fight.IsOver) return;
+            try { Log($"{_fight.Join(championId).Name} joins at the Main Door"); }
+            catch (Exception e) { Log(e.Message); }
+            Refresh();
         }
 
         /// <summary>One turn, then a floating number for every HP change (hits, heals, Bleed).</summary>
@@ -154,7 +212,7 @@ namespace Game.Combat
 
         private void SpawnNumber(RectTransform at, int diff, bool crit)
         {
-            var t = Label(_root, "Number", crit ? 54 : 40, TextAnchor.MiddleCenter);
+            var t = Ui.Label(_root, "Number", crit ? 54 : 40, TextAnchor.MiddleCenter);
             t.text = diff > 0 ? $"+{diff}" : crit ? $"{-diff}!" : $"{-diff}";
             var color = diff > 0 ? new Color(0.4f, 1f, 0.5f) : crit ? new Color(1f, 0.85f, 0.2f) : Color.white;
             t.color = color;
@@ -199,15 +257,20 @@ namespace Game.Combat
             var hero = next != null && next.Side == Side.Heroes && !_busy && !next.Has(StatusEffect.Stun) ? next : null;
             var valid = hero != null && _picked != null ? Targeting.Valid(_fight, hero, _picked) : new List<FightUnit>();
 
-            foreach (var s in _slots)
+            // D-105 row: boxes centred, left (our Main Door end) to right.
+            var row = _fight.Row;
+            for (int i = 0; i < _slots.Count; i++)
             {
-                var line = _fight.Line(s.Side);
-                s.Unit = s.Line < line.Count ? line[s.Line] : null;
+                var s = _slots[i];
+                s.Unit = i < row.Count ? row[i] : null;
+                s.Box.gameObject.SetActive(s.Unit != null);
                 var u = s.Unit;
-                s.Box.color = u == null ? EmptyColor : s.Side == Side.Heroes ? HeroColor : EnemyColor;
-                s.Border.enabled = u != null && (u == next || valid.Contains(u));
-                s.Border.effectColor = u == next ? ActiveColor : TargetColor;
-                s.Label.text = u == null ? "" : Describe(u);
+                if (u == null) continue;
+                Ui.Place(s.Box.rectTransform, 0.5f + (i - (row.Count - 1) / 2f) * 0.145f, 0.6f, 250, 330);
+                s.Box.color = u.Side == Side.Heroes ? Ui.Hero : Ui.Enemy;
+                s.Border.enabled = u == next || valid.Contains(u);
+                s.Border.effectColor = u == next ? Ui.Active : Ui.Picked;
+                s.Label.text = Describe(u);
             }
 
             for (int i = 0; i < _skillButtons.Count; i++)
@@ -219,33 +282,61 @@ namespace Game.Combat
                 var sk = hero!.Skills[i];
                 int cd = hero.Cooldown(sk.Slot);
                 b.interactable = hero.CanUse(sk);
-                b.GetComponentInChildren<Text>().text =
-                    $"{sk.Slot} {sk.Name}\n{SkillInfo(sk)}{(cd > 0 ? $"  (cd {cd})" : "")}";
-                b.image.color = _picked == sk ? TargetColor : Color.white;
+                Ui.SetText(b, $"{sk.Slot} {sk.Name}\n{SkillInfo(sk)}{(cd > 0 ? $"  (cd {cd})" : "")}");
+                b.image.color = _picked == sk ? Ui.Picked : Color.white;
             }
             var heroes = _fight.Line(Side.Heroes);
-            _shiftFront.gameObject.SetActive(hero != null && hero.Line > 0);
-            _shiftBack.gameObject.SetActive(hero != null && hero.Line < heroes.Count - 1);
+            _shiftFront.gameObject.SetActive(CanShift(hero, -1));
+            _shiftBack.gameObject.SetActive(CanShift(hero, +1));
+            _fallBack.gameObject.SetActive(_stageMode && hero != null && heroes.Count > 1);
 
+            var bench = _fight.Bench;
+            bool canJoin = !_fight.IsOver && !_busy && heroes.Count < _capacity;
+            for (int i = 0; i < _joinButtons.Count; i++)
+            {
+                var b = _joinButtons[i];
+                bool show = canJoin && i < bench.Count;
+                b.gameObject.SetActive(show);
+                if (!show) continue;
+                var e = bench[i];
+                var def = _db.Champion(e.ChampionId);
+                Ui.SetText(b, $"Join: {def.Name}{(e.Hp is int hp ? $" (HP {hp})" : "")}");
+            }
+            _retreat.gameObject.SetActive(_stageMode && !_fight.IsOver);
+
+            string incoming = _fight.IncomingCount > 0 ? $" · {_fight.IncomingCount} incoming" : "";
             _header.text = _fight.IsOver
                 ? $"{_fight.Outcome}{(_fight.LossReason != LossReason.None ? $" ({_fight.LossReason})" : "")} - round {_fight.Round}"
-                : $"Round {_fight.Round}/{_fight.RoundCap} · {(next != null ? next.Name : "")}'s turn";
+                : $"{(_fight.InOpening ? "Opening" : $"Round {_fight.Round}/{_fight.RoundCap}")} · {(next != null ? next.Name : "")}'s turn{incoming}";
             _hint.text = _fight.IsOver ? "" : hero == null ? "Enemy turn..." : _picked == null ? "Pick a skill" : "Pick a green target";
             _result.SetActive(_fight.IsOver);
             if (_fight.IsOver)
                 _resultText.text = _fight.Outcome == FightOutcome.Won
-                    ? $"Victory!\n<size=28>{_setup.Name}, round {_fight.Round}</size>"
+                    ? $"Victory!\n<size=28>{_title}, round {_fight.Round}</size>"
                     : $"Defeat\n<size=28>{(_fight.LossReason == LossReason.RoundCap ? $"round cap {_fight.RoundCap} reached" : "all heroes Down")}</size>";
             _logText.text = string.Join("\n", _log);
+        }
+
+        /// <summary>CMB-16: only Main-spot champions next to each other swap; flankers don't.</summary>
+        private bool CanShift(FightUnit? hero, int direction)
+        {
+            if (hero == null || hero.Spot != Spot.Main) return false;
+            var line = _fight.Line(Side.Heroes);
+            int at = hero.Line + direction;
+            return at >= 0 && at < line.Count && line[at].Spot == Spot.Main;
         }
 
         private string Describe(FightUnit u)
         {
             var sb = new StringBuilder();
-            sb.Append($"<b>{u.Name}</b>\nHP {u.Hp}/{u.MaxHp}\nAtk {u.Attack} Def {u.Defense} Spd {u.Speed}");
+            sb.Append($"<b>{u.Name}</b> {(u.Facing > 0 ? ">>" : "<<")}");
+            if (u.Spot == Spot.Behind) sb.Append(u.Side == Side.Heroes ? "\n<color=#9fe8ff>Margin flanker</color>" : "\n<color=#ffb0b0>Bleed-through</color>");
+            else if (u.Spot == Spot.Gutter) sb.Append("\n<color=#ffb0b0>Gutter</color>");
+            sb.Append($"\nHP {u.Hp}/{u.MaxHp}\nAtk {u.Attack} Def {u.Defense} Spd {u.Speed}");
             foreach (var e in u.Effects)
                 sb.Append($"\n{e.Type} {e.Rounds}{(e.Type == StatusEffect.Ward ? $" ({e.Amount})" : "")}");
             if (u.IsFaded) sb.Append("\nFaded");
+            if (u.RingIn > 0) sb.Append($"\nRings in {u.RingIn}");
             var intent = _fight.IntentOf(u);
             if (intent != null) sb.Append($"\n<color=#ffd34d>Next: {intent.Skill.Name} > {intent.Target.Name}</color>");
             return sb.ToString();
@@ -282,146 +373,94 @@ namespace Game.Combat
 
         private void BuildUi()
         {
-            if (FindAnyObjectByType<EventSystem>() == null)
-                new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
+            var root = _root = Ui.Canvas(transform, "FightCanvas", 10);
 
-            var canvasGo = new GameObject("FightCanvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
-            canvasGo.transform.SetParent(transform, false);
-            canvasGo.GetComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
-            var scaler = canvasGo.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920, 1080);
-            scaler.matchWidthOrHeight = 0.5f;
-            var root = _root = (RectTransform)canvasGo.transform;
+            var bg = Ui.Panel(root, "Background", new Color(0.12f, 0.11f, 0.1f));
+            Ui.Stretch(bg.rectTransform, 0, 0, 1, 1);
 
-            var bg = Panel(root, "Background", new Color(0.12f, 0.11f, 0.1f));
-            Stretch(bg.rectTransform, 0, 0, 1, 1);
+            _header = Ui.Label(root, "Header", 40, TextAnchor.MiddleCenter);
+            Ui.Place(_header.rectTransform, 0.5f, 0.95f, 1400, 70);
+            _hint = Ui.Label(root, "Hint", 28, TextAnchor.MiddleCenter);
+            Ui.Place(_hint.rectTransform, 0.5f, 0.89f, 1000, 50);
 
-            _header = Label(root, "Header", 40, TextAnchor.MiddleCenter);
-            Place(_header.rectTransform, 0.5f, 0.95f, 1400, 70);
-            _hint = Label(root, "Hint", 28, TextAnchor.MiddleCenter);
-            Place(_hint.rectTransform, 0.5f, 0.89f, 1000, 50);
-
-            // Row: hero Back(2) Middle(1) Front(0) | enemy Front(0) Middle(1) Back(2)
-            float[] xs = { 0.09f, 0.23f, 0.37f, 0.63f, 0.77f, 0.91f };
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < MaxBoxes; i++)
             {
-                var side = i < 3 ? Side.Heroes : Side.Enemies;
-                int line = i < 3 ? 2 - i : i - 3;
-                var box = Panel(root, $"{side}{line}", EmptyColor);
-                Place(box.rectTransform, xs[i], 0.6f, 250, 330);
-                var slot = new Slot { Side = side, Line = line, Box = box };
+                var box = Ui.Panel(root, $"Box{i}", Ui.Empty);
+                var slot = new Slot { Box = box };
                 slot.Border = box.gameObject.AddComponent<Outline>();
                 slot.Border.effectDistance = new Vector2(6, 6);
-                slot.Label = Label(box.rectTransform, "Info", 22, TextAnchor.UpperCenter);
-                Stretch(slot.Label.rectTransform, 0.04f, 0.03f, 0.96f, 0.97f);
+                slot.Label = Ui.Label(box.rectTransform, "Info", 22, TextAnchor.UpperCenter);
+                Ui.Stretch(slot.Label.rectTransform, 0.04f, 0.03f, 0.96f, 0.97f);
                 box.gameObject.AddComponent<Button>().onClick.AddListener(() => OnSlot(slot));
                 _slots.Add(slot);
             }
-            var vs = Label(root, "Versus", 48, TextAnchor.MiddleCenter);
-            vs.text = "VS";
-            Place(vs.rectTransform, 0.5f, 0.6f, 120, 80);
 
             for (int i = 0; i < 3; i++)
             {
                 int index = i;
-                var b = MakeButton(root, $"Skill{i}", 22, () => OnSkill(index));
-                Place((RectTransform)b.transform, 0.3f + i * 0.2f, 0.2f, 360, 110);
+                var b = Ui.Button(root, $"Skill{i}", 22, () => OnSkill(index));
+                Ui.Place(Ui.Rect(b), 0.3f + i * 0.2f, 0.2f, 360, 110);
                 _skillButtons.Add(b);
             }
-            _shiftBack = MakeButton(root, "ShiftBack", 24, () => HeroShift(+1));
-            _shiftBack.GetComponentInChildren<Text>().text = "< Shift back";
-            Place((RectTransform)_shiftBack.transform, 0.07f, 0.2f, 200, 80);
-            _shiftFront = MakeButton(root, "ShiftFront", 24, () => HeroShift(-1));
-            _shiftFront.GetComponentInChildren<Text>().text = "Shift front >";
-            Place((RectTransform)_shiftFront.transform, 0.07f, 0.11f, 200, 80);
+            _shiftBack = Ui.Button(root, "ShiftBack", 24, () => HeroShift(+1), "< Shift back");
+            Ui.Place(Ui.Rect(_shiftBack), 0.07f, 0.2f, 200, 80);
+            _shiftFront = Ui.Button(root, "ShiftFront", 24, () => HeroShift(-1), "Shift front >");
+            Ui.Place(Ui.Rect(_shiftFront), 0.07f, 0.11f, 200, 80);
+            _fallBack = Ui.Button(root, "FallBack", 24, HeroFallBack, "Fall back");
+            Ui.Place(Ui.Rect(_fallBack), 0.07f, 0.29f, 200, 70);
+            for (int i = 0; i < Fight.MaxSlots; i++)
+            {
+                int index = i;
+                var b = Ui.Button(root, $"Join{i}", 22, () => HeroJoin(_fight.Bench[index].ChampionId));
+                Ui.Place(Ui.Rect(b), 0.1f + i * 0.14f, 0.36f, 250, 60);
+                _joinButtons.Add(b);
+            }
+            _retreat = Ui.Button(root, "Retreat", 24, () => _onRetreat?.Invoke(), "Retreat");
+            Ui.Place(Ui.Rect(_retreat), 0.94f, 0.95f, 160, 60);
 
-            _logText = Label(root, "Log", 20, TextAnchor.LowerLeft);
-            Place(_logText.rectTransform, 0.83f, 0.17f, 620, 280);
+            _logText = Ui.Label(root, "Log", 20, TextAnchor.LowerLeft);
+            Ui.Place(_logText.rectTransform, 0.83f, 0.17f, 620, 280);
 
             // Win / lose panel (on top of the row).
-            var result = Panel(root, "Result", new Color(0, 0, 0, 0.8f));
-            Place(result.rectTransform, 0.5f, 0.55f, 760, 420);
+            var result = Ui.Panel(root, "Result", new Color(0, 0, 0, 0.8f));
+            Ui.Place(result.rectTransform, 0.5f, 0.55f, 760, 420);
             _result = result.gameObject;
-            _resultText = Label(result.rectTransform, "Text", 64, TextAnchor.MiddleCenter);
-            Place(_resultText.rectTransform, 0.5f, 0.7f, 700, 200);
-            AddButton(result.rectTransform, "Retry (same seed)", 0.2f, 0.22f, () => ShowPicker(false));
-            AddButton(result.rectTransform, "Next seed", 0.5f, 0.22f, () => { seed++; ShowPicker(false); });
-            AddButton(result.rectTransform, "Pick fight", 0.8f, 0.22f, () => ShowPicker(true));
+            _resultText = Ui.Label(result.rectTransform, "Text", 64, TextAnchor.MiddleCenter);
+            Ui.Place(_resultText.rectTransform, 0.5f, 0.7f, 700, 200);
+            var testButtons = Ui.Panel(result.rectTransform, "TestButtons", Color.clear);
+            Ui.Stretch(testButtons.rectTransform, 0, 0, 1, 1);
+            _testButtons = testButtons.gameObject;
+            AddButton(testButtons.rectTransform, "Retry (same seed)", 0.2f, 0.22f, () => ShowPicker(false));
+            AddButton(testButtons.rectTransform, "Next seed", 0.5f, 0.22f, () => { seed++; ShowPicker(false); });
+            AddButton(testButtons.rectTransform, "Pick fight", 0.8f, 0.22f, () => ShowPicker(true));
+            var stageButtons = Ui.Panel(result.rectTransform, "StageButtons", Color.clear);
+            Ui.Stretch(stageButtons.rectTransform, 0, 0, 1, 1);
+            _stageButtons = stageButtons.gameObject;
+            AddButton(stageButtons.rectTransform, "Continue", 0.5f, 0.22f, () => _onDone?.Invoke());
 
             // Test-fight picker (Seedbed 1–6, D-88).
-            var picker = Panel(root, "Picker", new Color(0.08f, 0.08f, 0.07f, 0.97f));
-            Stretch(picker.rectTransform, 0, 0, 1, 1);
+            var picker = Ui.Panel(root, "Picker", new Color(0.08f, 0.08f, 0.07f, 0.97f));
+            Ui.Stretch(picker.rectTransform, 0, 0, 1, 1);
             _picker = picker.gameObject;
-            var title = Label(picker.rectTransform, "Title", 48, TextAnchor.MiddleCenter);
+            var title = Ui.Label(picker.rectTransform, "Title", 48, TextAnchor.MiddleCenter);
             title.text = "Test fight";
-            Place(title.rectTransform, 0.5f, 0.85f, 800, 90);
+            Ui.Place(title.rectTransform, 0.5f, 0.85f, 800, 90);
             for (int i = 0; i < TestFight.Seedbed.Length; i++)
             {
                 var tf = TestFight.Seedbed[i];
                 var b = AddButton(picker.rectTransform, $"{tf.Name}\nLv{tf.EnemyLevel}: {string.Join(" ", tf.Enemies)}",
                     0.25f + (i % 3) * 0.25f, i < 3 ? 0.6f : 0.35f, () => { _setup = tf; ShowPicker(false); });
-                ((RectTransform)b.transform).sizeDelta = new Vector2(400, 150);
+                Ui.Rect(b).sizeDelta = new Vector2(400, 150);
             }
-
+            _picker.SetActive(false);
+            _result.SetActive(false);
         }
 
-        private Button AddButton(RectTransform parent, string text, float ax, float ay, UnityEngine.Events.UnityAction onClick)
+        private static Button AddButton(RectTransform parent, string text, float ax, float ay, UnityEngine.Events.UnityAction onClick)
         {
-            var b = MakeButton(parent, text, 26, onClick);
-            b.GetComponentInChildren<Text>().text = text;
-            Place((RectTransform)b.transform, ax, ay, 220, 80);
+            var b = Ui.Button(parent, text, 26, onClick, text);
+            Ui.Place(Ui.Rect(b), ax, ay, 220, 80);
             return b;
-        }
-
-        private static Image Panel(RectTransform parent, string name, Color color)
-        {
-            var go = new GameObject(name, typeof(RectTransform), typeof(Image));
-            go.transform.SetParent(parent, false);
-            var img = go.GetComponent<Image>();
-            img.color = color;
-            return img;
-        }
-
-        private Text Label(RectTransform parent, string name, int size, TextAnchor anchor)
-        {
-            var go = new GameObject(name, typeof(RectTransform), typeof(Text));
-            go.transform.SetParent(parent, false);
-            var t = go.GetComponent<Text>();
-            t.font = _font;
-            t.fontSize = size;
-            t.alignment = anchor;
-            t.color = Color.white;
-            t.supportRichText = true;
-            t.raycastTarget = false;
-            t.horizontalOverflow = HorizontalWrapMode.Wrap;
-            t.verticalOverflow = VerticalWrapMode.Overflow;
-            return t;
-        }
-
-        private Button MakeButton(RectTransform parent, string name, int size, UnityEngine.Events.UnityAction onClick)
-        {
-            var img = Panel(parent, name, Color.white);
-            var b = img.gameObject.AddComponent<Button>();
-            b.onClick.AddListener(onClick);
-            var t = Label(img.rectTransform, "Text", size, TextAnchor.MiddleCenter);
-            t.color = Color.black;
-            Stretch(t.rectTransform, 0.03f, 0.05f, 0.97f, 0.95f);
-            return b;
-        }
-
-        private static void Place(RectTransform rt, float ax, float ay, float w, float h)
-        {
-            rt.anchorMin = rt.anchorMax = new Vector2(ax, ay);
-            rt.sizeDelta = new Vector2(w, h);
-            rt.anchoredPosition = Vector2.zero;
-        }
-
-        private static void Stretch(RectTransform rt, float x0, float y0, float x1, float y1)
-        {
-            rt.anchorMin = new Vector2(x0, y0);
-            rt.anchorMax = new Vector2(x1, y1);
-            rt.offsetMin = rt.offsetMax = Vector2.zero;
         }
     }
 }
